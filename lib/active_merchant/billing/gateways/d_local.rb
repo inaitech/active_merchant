@@ -139,11 +139,10 @@ module ActiveMerchant #:nodoc:
       end
 
       def add_card(post, card, action, options = {})
+        post[:card] = {}
         if options[:type] == 'card_id'
-          p card
           post[:card][:card_id] = card[:card_id]
-        else 
-          post[:card] = {}
+        else
           post[:card][:holder_name] = card.name
           post[:card][:expiration_month] = card.month
           post[:card][:expiration_year] = card.year
