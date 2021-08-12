@@ -14,7 +14,8 @@ class CheckoutV2Test < Test::Unit::TestCase
       token: "token"
     }
     @token_payment_options = {
-      type: "id"
+      token_type: "id",
+      currency: "USD"
     }
   end
 
