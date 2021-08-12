@@ -42,11 +42,24 @@ class RemoteDLocalTest < Test::Unit::TestCase
       document: '184853849',
       currency: 'PEN'
     }
+    @card_save_options = {
+      billing_address: address(country: 'India'),
+      document: 'ABCDE1111N',
+      currency: 'INR',
+      save_card: true
+    }
   end
 
   def test_successful_purchase
     response = @gateway.purchase(@amount, @credit_card, @options)
     assert_success response
+    assert_match 'The payment was paid', response.message
+  end
+
+  def test_successful_card_save
+    response = @gateway.verify(@credit_card, @card_save_options)
+    p response
+    assert_failure response
     assert_match 'The payment was paid', response.message
   end
 
