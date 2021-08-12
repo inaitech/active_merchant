@@ -144,7 +144,7 @@ module ActiveMerchant #:nodoc:
 
       def add_card(post, card, action, options = {})
         post[:card] = {}
-        if options[:type] == 'card_id'
+        if options[:token_type] == 'card_id'
           post[:card][:card_id] = card[:card_id]
         else
           post[:card][:holder_name] = card.name

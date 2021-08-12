@@ -58,7 +58,6 @@ class RemoteDLocalTest < Test::Unit::TestCase
 
   def test_successful_card_save
     response = @gateway.verify(@credit_card, @card_save_options)
-    p response
     assert_failure response
     assert_match 'The payment was paid', response.message
   end
