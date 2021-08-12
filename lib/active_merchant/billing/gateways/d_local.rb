@@ -139,17 +139,21 @@ module ActiveMerchant #:nodoc:
       end
 
       def add_card(post, card, action, options = {})
-        post[:card] = {}
-        post[:card][:holder_name] = card.name
-        post[:card][:expiration_month] = card.month
-        post[:card][:expiration_year] = card.year
-        post[:card][:number] = card.number
-        post[:card][:cvv] = card.verification_value
-        post[:card][:descriptor] = options[:dynamic_descriptor] if options[:dynamic_descriptor]
+        if options[:type] == 'card_id'
+          post[:card][:card_id] = card.card_id
+        else 
+          post[:card] = {}
+          post[:card][:holder_name] = card.name
+          post[:card][:expiration_month] = card.month
+          post[:card][:expiration_year] = card.year
+          post[:card][:number] = card.number
+          post[:card][:cvv] = card.verification_value
+          post[:card][:save] = options[:save_card]
+        end
         post[:card][:capture] = (action == 'purchase')
-        post[:card][:save] = options[:save_card]
         post[:card][:installments] = options[:installments] if options[:installments]
         post[:card][:installments_id] = options[:installments_id] if options[:installments_id]
+        post[:card][:descriptor] = options[:dynamic_descriptor] if options[:dynamic_descriptor]
       end
 
       def parse(body)
