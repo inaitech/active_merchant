@@ -109,8 +109,8 @@ module ActiveMerchant #:nodoc:
 
       def add_payment_method(post, payment_method, options)
         post[:source] = {}
-        if options[:type] == 'id'
-          post[:source][:type] = options[:type]
+        if options[:token_type] == 'id'
+          post[:source][:type] = options[:token_type]
           post[:source][:id] = payment_method[:token]
           return
         end

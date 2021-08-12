@@ -22,7 +22,7 @@ class RemoteCheckoutV2Test < Test::Unit::TestCase
     }
 
     @source_id_payment_options = {
-      type: 'id',
+      token_type: 'id',
       currency: 'USD'
     }
 
