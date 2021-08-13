@@ -1,6 +1,6 @@
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
-    class PSPTokenizedCard < PaymentToken
+    class TokenizedCard < PaymentToken
       # This is a representation of the card token object for PSPs
 
       def initialize(payment_data, options = {})
