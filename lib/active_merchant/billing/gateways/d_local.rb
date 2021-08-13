@@ -104,8 +104,10 @@ module ActiveMerchant #:nodoc:
         post[:payer] = {}
         if card.is_a?(CreditCard)
           post[:payer][:name] = card.name
+        elsif card.is_a?(TokenizedCard)
+          post[:payer][:name] = card.payment_data[:holder_name]
         else
-          post[:payer][:name] = card[:name]
+          post[:payer][:name] = ""
         end
         post[:payer][:email] = options[:email] if options[:email]
         post[:payer][:birth_date] = options[:birth_date] if options[:birth_date]
@@ -144,8 +146,8 @@ module ActiveMerchant #:nodoc:
 
       def add_card(post, card, action, options = {})
         post[:card] = {}
-        if options[:token_type] == 'card_id'
-          post[:card][:card_id] = card[:card_id]
+        if card.is_a(TokenizedCard)?
+          post[:card][:card_id] = card.payment_data[:token]
         else
           post[:card][:holder_name] = card.name
           post[:card][:expiration_month] = card.month
