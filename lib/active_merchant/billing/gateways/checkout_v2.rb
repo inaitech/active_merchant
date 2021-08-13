@@ -111,8 +111,8 @@ module ActiveMerchant #:nodoc:
         post[:source] = {}
         if payment_method.is_a?(TokenizedCard)
           p payment_method
-          post[:source][:type] = payment_method[:token_type]
-          post[:source][:id] = payment_method[:token]
+          post[:source][:type] = payment_method.payment_data[:token_type]
+          post[:source][:id] = payment_method.payment_data[:token]
           return
         end
         if payment_method.is_a?(NetworkTokenizationCreditCard) && payment_method.source == :network_token
