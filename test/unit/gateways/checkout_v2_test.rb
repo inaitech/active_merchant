@@ -10,11 +10,8 @@ class CheckoutV2Test < Test::Unit::TestCase
 
     @credit_card = credit_card
     @amount = 100
-    @payment_token = {
-      token: "token"
-    }
+    @payment_token = tokenized_card()
     @token_payment_options = {
-      token_type: "id",
       currency: "USD"
     }
   end
