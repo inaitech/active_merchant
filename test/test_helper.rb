@@ -188,6 +188,15 @@ module ActiveMerchant
       Billing::NetworkTokenizationCreditCard.new(defaults)
     end
 
+    def tokenized_card(token = "src_ydubwfflc7pefgaok7pqtld7ti", type = "id", options = {})
+      defaults = {
+        token: token,
+        type: type
+      }.update(options)
+
+      Billing::TokenizedCard.new(defaults)
+    end
+
     def check(options = {})
       defaults = {
         name: 'Jim Smith',
