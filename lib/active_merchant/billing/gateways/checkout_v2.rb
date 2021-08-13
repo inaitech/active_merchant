@@ -109,7 +109,7 @@ module ActiveMerchant #:nodoc:
 
       def add_payment_method(post, payment_method, options)
         post[:source] = {}
-        if payment_method.is_a?(TokenizedCard)
+        if payment_method.is_a?(PspTokenizedCard)
           post[:source][:type] = payment_method.payment_data[:type]
           post[:source][:id] = payment_method.payment_data[:token]
           return

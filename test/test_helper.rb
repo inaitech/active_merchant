@@ -188,13 +188,13 @@ module ActiveMerchant
       Billing::NetworkTokenizationCreditCard.new(defaults)
     end
 
-    def tokenized_card(token = "src_ydubwfflc7pefgaok7pqtld7ti", type = "id", options = {})
+    def psp_tokenized_card(token = "src_ydubwfflc7pefgaok7pqtld7ti", type = "id", options = {})
       defaults = {
         token: token,
         type: type
       }.update(options)
 
-      Billing::TokenizedCard.new(defaults)
+      Billing::PspTokenizedCard.new(defaults)
     end
 
     def check(options = {})
