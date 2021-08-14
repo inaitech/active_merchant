@@ -10,7 +10,7 @@ class CheckoutV2Test < Test::Unit::TestCase
 
     @credit_card = credit_card
     @amount = 100
-    @payment_token = tokenized_card()
+    @payment_token = psp_tokenized_card()
     @token_payment_options = {
       currency: "USD"
     }

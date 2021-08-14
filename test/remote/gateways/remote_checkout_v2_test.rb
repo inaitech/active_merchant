@@ -17,17 +17,13 @@ class RemoteCheckoutV2Test < Test::Unit::TestCase
       source:             :network_token,
       verification_value: nil)
 
-    @source_id_payment_info = tokenized_card()
+    @source_id_payment_info = psp_tokenized_card()
 
     @source_id_payment_options = {
       currency: 'USD'
     }
 
-    @invalid_source_id_payment_info = tokenized_card("Invalid Token")
-
-    @options = {
       order_id: '1',
-      billing_address: address,
       description: 'Purchase',
       email: 'longbob.longsen@example.com'
     }
