@@ -44,9 +44,9 @@ class RemoteDLocalTest < Test::Unit::TestCase
       currency: 'PEN'
     }
     @card_save_options = {
-      billing_address: address(country: 'India'),
-      document: 'ABCDE1111N',
-      currency: 'INR',
+      billing_address: address(country: 'Brazil'),
+      document: '71575743221',
+      currency: 'BRL',
       save_card: true
     }
   end
@@ -59,8 +59,8 @@ class RemoteDLocalTest < Test::Unit::TestCase
 
   def test_successful_card_save
     response = @gateway.verify(@credit_card, @card_save_options)
-    assert_success response
-    assert_match 'The payment was paid', response.message
+    assert_success response.primary_response
+    assert_match 'The payment was authorized', response.message
   end
 
   def test_successful_purchase_with_installments
