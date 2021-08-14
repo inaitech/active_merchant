@@ -146,6 +146,7 @@ module ActiveMerchant #:nodoc:
 
       def add_card(post, card, action, options = {})
         post[:card] = {}
+        p card
         if card.is_a(PspTokenizedCard)?
           post[:card][:card_id] = card.payment_data[:token]
         else
