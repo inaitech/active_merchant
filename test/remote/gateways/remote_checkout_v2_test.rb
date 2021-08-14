@@ -22,7 +22,7 @@ class RemoteCheckoutV2Test < Test::Unit::TestCase
     @source_id_payment_options = {
       currency: 'USD'
     }
-    
+
     @invalid_source_id_payment_info = psp_tokenized_card("Invalid Token")
 
     @options = {
