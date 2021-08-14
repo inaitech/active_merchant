@@ -104,8 +104,8 @@ module ActiveMerchant #:nodoc:
         post[:payer] = {}
         if card.is_a?(CreditCard)
           post[:payer][:name] = card.name
-        elsif card.is_a?(TokenizedCard)
-          post[:payer][:name] = card.payment_data[:holder_name]
+        elsif card.is_a?(PspTokenizedCard)
+          post[:payer][:name] = options[:name]
         else
           post[:payer][:name] = ""
         end
@@ -146,7 +146,7 @@ module ActiveMerchant #:nodoc:
 
       def add_card(post, card, action, options = {})
         post[:card] = {}
-        if card.is_a(TokenizedCard)?
+        if card.is_a(PspTokenizedCard)?
           post[:card][:card_id] = card.payment_data[:token]
         else
           post[:card][:holder_name] = card.name

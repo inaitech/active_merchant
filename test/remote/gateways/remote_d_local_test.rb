@@ -8,6 +8,7 @@ class RemoteDLocalTest < Test::Unit::TestCase
     @credit_card = credit_card('4111111111111111')
     @credit_card_naranja = credit_card('5895627823453005')
     @cabal_credit_card = credit_card('5896 5700 0000 0004')
+    @tokenized_card = psp_tokenized_card('')
     # No test card numbers, all txns are approved by default,
     # but errors can be invoked directly with the `description` field
     @options = {
