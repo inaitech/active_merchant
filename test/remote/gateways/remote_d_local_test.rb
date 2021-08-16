@@ -60,6 +60,7 @@ class RemoteDLocalTest < Test::Unit::TestCase
     response = @gateway.verify(@credit_card, @card_save_options)
     assert_success response.primary_response
     assert_match 'The payment was authorized', response.message
+    assert response.primary_response.params["card"].key?("card_id")
   end
 
   def test_successful_token_payment

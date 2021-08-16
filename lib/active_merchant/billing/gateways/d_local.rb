@@ -146,20 +146,20 @@ module ActiveMerchant #:nodoc:
 
       def add_card(post, card, action, options = {})
         post[:card] = {}
+        if card.is_a?(PspTokenizedCard)
+          post[:card][:card_id] = card.payment_data[:token]
+        else
+          post[:card][:holder_name] = card.name
+          post[:card][:expiration_month] = card.month
+          post[:card][:expiration_year] = card.year
+          post[:card][:number] = card.number
+          post[:card][:cvv] = card.verification_value
+        end
         post[:card][:save] = options[:save_card]
+        post[:card][:descriptor] = options[:dynamic_descriptor] if options[:dynamic_descriptor]
         post[:card][:capture] = (action == 'purchase')
         post[:card][:installments] = options[:installments] if options[:installments]
         post[:card][:installments_id] = options[:installments_id] if options[:installments_id]
-        post[:card][:descriptor] = options[:dynamic_descriptor] if options[:dynamic_descriptor]
-        if card.is_a?(PspTokenizedCard)
-          post[:card][:card_id] = card.payment_data[:token]
-          return
-        end
-        post[:card][:holder_name] = card.name
-        post[:card][:expiration_month] = card.month
-        post[:card][:expiration_year] = card.year
-        post[:card][:number] = card.number
-        post[:card][:cvv] = card.verification_value
       end
 
       def parse(body)
