@@ -73,11 +73,15 @@ module ActiveMerchant #:nodoc:
 
       def add_auth_purchase_params(post, money, card, action, options)
         add_invoice(post, money, options)
-        post[:payment_method_id] = 'CARD'
-        post[:payment_method_flow] = 'DIRECT'
+        post[:payment_method_id] = options[:payment_method_id] || 'CARD'
+        post[:payment_method_flow] = options[:payment_method_flow] || 'DIRECT'
         add_country(post, card, options)
         add_payer(post, card, options)
-        add_card(post, card, action, options)
+        if card.is_a?(WalletToken)
+          add_wallet(post, card, action, options)
+        else
+          add_card(post, card, action, options)
+        end
         post[:order_id] = options[:order_id] || generate_unique_id
         post[:description] = options[:description] if options[:description]
       end
@@ -142,6 +146,15 @@ module ActiveMerchant #:nodoc:
 
         house = address[:address1].split(/\s+/).keep_if { |x| x =~ /\d/ }.join(' ')
         house.empty? ? nil : house
+      end
+
+      def add_wallet(post, wallet, action, options = {})
+        post[:wallet] = {}
+        post[:wallet][:token] = wallet[:token] if wallet[:token]
+        post[:wallet][:userid] = wallet.payment_data[:userid] if wallet.payment_data[:userid]
+        post[:wallet][:save] = options[:save_wallet] if options[:save]
+        post[:wallet][:verify] = options[:verify] if options[:verify]
+        post[:wallet][:label] = options[:label] if options[:label]
       end
 
       def add_card(post, card, action, options = {})
