@@ -23,6 +23,13 @@ module ActiveMerchant #:nodoc:
         commit('purchase', post, options)
       end
 
+      def initiate(money, payment, options = {})
+        post = {}
+        add_auth_purchase_params(post, money, payment, 'initiate', options)
+
+        commit('initiate', post, options)
+      end
+
       def authorize(money, payment, options = {})
         post = {}
         add_auth_purchase_params(post, money, payment, 'authorize', options)
@@ -152,7 +159,7 @@ module ActiveMerchant #:nodoc:
         post[:wallet] = {}
         post[:wallet][:token] = wallet[:token] if wallet[:token]
         post[:wallet][:userid] = wallet.payment_data[:userid] if wallet.payment_data[:userid]
-        post[:wallet][:save] = options[:save_wallet] if options[:save]
+        post[:wallet][:save] = options[:save] if options[:save]
         post[:wallet][:verify] = options[:verify] if options[:verify]
         post[:wallet][:label] = options[:label] if options[:label]
       end
@@ -238,6 +245,7 @@ module ActiveMerchant #:nodoc:
           'secure_payments'
         when 'refund'
           'refunds'
+        when 'initiate'
         when 'capture'
           'payments'
         when 'void'
