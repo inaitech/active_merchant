@@ -89,7 +89,7 @@ class RemoteDLocalTest < Test::Unit::TestCase
     @offsite_payment_options.update(
       :order_id => order_id
     )
-    response = @gateway.initiate(100, @wallet_token, @offsite_payment_options)
+    response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options)
     assert_success response
     assert_match 'The payment is pending', response.message
     assert_match order_id, response.params["order_id"]
@@ -101,7 +101,7 @@ class RemoteDLocalTest < Test::Unit::TestCase
     @offsite_payment_options_india.update(
       :order_id => order_id
     )
-    response = @gateway.initiate(100, @wallet_token, @offsite_payment_options_india)
+    response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options_india)
     assert_success response
     assert_match 'The payment is pending', response.message
     assert_match order_id, response.params["order_id"]
@@ -231,6 +231,12 @@ class RemoteDLocalTest < Test::Unit::TestCase
     response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options_india.update(billing_address: {'country': 'IN'}))
     assert_failure response
     assert_match 'Missing parameter: payer.address', response.message
+  end
+
+  def test_failed_offsite_save_with_0_payment
+    response = @gateway.initiate(0, @wallet_token, @offsite_payment_options.merge(save: true))
+    assert_failure response
+    assert_match 'Amount too low', response.message
   end
 
   def test_successful_authorize_and_capture
