@@ -157,7 +157,7 @@ module ActiveMerchant #:nodoc:
 
       def add_wallet(post, wallet, action, options = {})
         post[:wallet] = {}
-        post[:wallet][:token] = wallet[:token] if wallet[:token]
+        post[:wallet][:token] = wallet.token if wallet.token
         post[:wallet][:userid] = wallet.payment_data[:userid] if wallet.payment_data[:userid]
         post[:wallet][:save] = options[:save] if options[:save]
         post[:wallet][:verify] = options[:verify] if options[:verify]
