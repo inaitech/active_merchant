@@ -215,6 +215,24 @@ class RemoteDLocalTest < Test::Unit::TestCase
     assert_match 'Invalid parameter: payer.document', response.message
   end
 
+  def test_failed_offsite_invalid_document
+    response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options.merge(document: 'bad_document'))
+    assert_failure response
+    assert_match 'Invalid parameter: payer.document', response.message
+  end
+
+  def test_failed_offsite_verify_with_nonzero_amount
+    response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options.merge(verify: true))
+    assert_failure response
+    assert_match 'Invalid parameter: wallet.verify', response.message
+  end
+
+  def test_failed_offsite_address_empty_india
+    response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options_india.update(billing_address: {'country': 'IN'}))
+    assert_failure response
+    assert_match 'Missing parameter: payer.address', response.message
+  end
+
   def test_successful_authorize_and_capture
     auth = @gateway.authorize(@amount, @credit_card, @options)
     assert_success auth
