@@ -28,7 +28,6 @@ module ActiveMerchant #:nodoc:
         add_auth_purchase_params(post, money, payment, 'initiate', options)
         post[:notification_url] = options[:notification_url] if options[:notification_url]
         post[:callback_url] = options[:callback_url] if options[:callback_url]
-        p post
 
         commit('initiate', post, options)
       end
