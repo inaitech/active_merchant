@@ -18,15 +18,17 @@ module ActiveMerchant #:nodoc:
         end
   
         def purchase(money, payment_id, options={})
+          # makes payment capture using the payment_id generated from Razorpay checkout SDK
           capture(money, payment_id, options)
         end
   
         def authorize(money, payment_id, options={})
-          commit(:get, "/payments/#{payment_id}", {})
+          # makes payment capture using the payment_id generated from Razorpay checkout SDK
+          capture(money, payment_id, options)
         end
   
         def capture(money, payment_id, options={})
-          return Response.new(false, 'Specify payment id') if payment_id.empty?
+          return Response.new(false, 'Payment ID is mandatory') if payment_id.empty?
           post = {}
           add_amount(post, money)
           commit(:post, "/payments/#{payment_id}/capture", post)
@@ -41,10 +43,7 @@ module ActiveMerchant #:nodoc:
         end
   
         def verify(credit_card, options={})
-          MultiResponse.run(:use_first_response) do |r|
-            r.process { authorize(100, credit_card, options) }
-            r.process(:ignore_result) { void(r.authorization, options) }
-          end
+          # No supporting API found so far
         end
   
         def supports_scrubbing?
