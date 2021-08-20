@@ -16,6 +16,17 @@ module ActiveMerchant #:nodoc:
           requires!(options, :key_id, :key_secret)
           super
         end
+
+        def create_order(money, options={})
+          requires!(options, :currency)
+          post = {}
+          add_amount(post, money)
+          post[:currency] = (options[:currency] || currency(money))
+          post[:receipt] = options[:order_id] if options[:order_id]
+          post[:notes] = options[:notes] if options[:notes]
+          post[:partial_payment] = options[:partial_payment] if options[:partial_payment]
+          commit(:post, 'order', {}, post)
+        end
   
         def purchase(money, payment_id, options={})
           # makes payment capture using the payment_id generated from Razorpay checkout SDK
@@ -30,12 +41,19 @@ module ActiveMerchant #:nodoc:
         def capture(money, payment_id, options={})
           return Response.new(false, 'Payment ID is mandatory') if payment_id.empty?
           post = {}
+          parameters = {}
           add_amount(post, money)
-          commit(:post, "/payments/#{payment_id}/capture", post)
+          post[:currency] = (options[:currency] || currency(money))
+          parameters[:authorization_id] = payment_id
+          commit(:post, 'capture', parameters, post)
         end
   
         def refund(money, payment_id, options={})
-          commit(:post,"/payments/#{payment_id}/refund", {})
+          parameters = {}
+          post = {}
+          parameters[:authorization_id] = payment_id
+          add_amount(post, money)
+          commit(:post, 'refund', parameters, post)
         end
   
         def void(authorization, options={})
@@ -77,9 +95,24 @@ module ActiveMerchant #:nodoc:
         def parse(body)
           JSON.parse(body)
         end
+
+        def endpoint(action, parameters)
+          case action
+          when 'order'
+            'orders'
+          when 'refund'
+            "payments/#{parameters[:authorization_id]}/refund"
+          when 'capture'
+            "payments/#{parameters[:authorization_id]}/capture"
+          end
+        end
+
+        def url(action, parameters)
+          "#{live_url}/#{endpoint(action, parameters)}"
+        end
   
-        def api_request(method, endpoint, parameters = nil, body = nil)
-          raw_response = ssl_request(method, "#{endpoint}?#{post_data(parameters)}", body, headers)
+        def api_request(method, endpoint, body = nil)
+          raw_response = ssl_request(method, endpoint, body, headers)
           parse(raw_response)
         rescue ActiveMerchant::ResponseError => e
           return parse(e.response.body)
@@ -87,21 +120,23 @@ module ActiveMerchant #:nodoc:
   
         def headers
           {
-            'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
+            'Content-Type' => 'application/json',
             'Authorization' => 'Basic ' + Base64.strict_encode64("#{@options[:key_id]}:#{@options[:key_secret]}").strip
           }
         end
   
-        def commit(method, path, parameters)
+        def commit(method, action, parameters, body={})
+          url = url(action, parameters)
+          post = post_data(action, body)
   
-          response = api_request(method, "#{live_url}#{path}", parameters)
+          response = api_request(method, url, post)
   
           Response.new(
             success_from(response),
             message_from(response),
             response,
             authorization: authorization_from(response),
-            avs_result: {conde: 'Y'},
+            avs_result: {code: 'Y'},
             cvv_result: 'M',
             test: test?,
             error_code: error_code_from(response)
@@ -125,24 +160,9 @@ module ActiveMerchant #:nodoc:
         def authorization_from(response)
           response['id']
         end
-  
-        def post_data(params)
-          return nil unless params
-  
-          params.map do |key, value|
-            next if value != false && value.blank?
-            if value.is_a?(Hash)
-              h = {}
-              value.each do |k, v|
-                h["#{key}[#{k}]"] = v unless v.blank?
-              end
-              post_data(h)
-            elsif value.is_a?(Array)
-              value.map { |v| "#{key}[]=#{CGI.escape(v.to_s)}" }.join("&")
-            else
-              "#{key}=#{CGI.escape(value.to_s)}"
-            end
-          end.compact.join("&")
+
+        def post_data(action, parameters={})
+          parameters.to_json
         end
   
         def error_code_from(response)

@@ -5,8 +5,8 @@ class RemoteRazorpayTest < Test::Unit::TestCase
     @gateway = RazorpayGateway.new(fixtures(:razorpay))
 
     @amount = 5000
-    @credit_card = 'pay_HnTllcQFCxVGNu'
-    @declined_card = 'pay_HnTllcQFCxVGNU'
+    @payment_id = 'pay_HnVYb97odhRE5B'
+    @invalid_payment_id = 'pay_HnTllcQFCxVGNU'
     @options = {
       billing_address: address,
       description: 'Store Purchase',
@@ -14,42 +14,47 @@ class RemoteRazorpayTest < Test::Unit::TestCase
       phone: '917912341123',
       email: 'user@example.com'
     }
+    @order_options = {
+      currency: 'INR',
+      order_id: 'order-id'
+    }
   end
 
   def test_successful_purchase
     # TODO: Add payment initiation call before purchase call.
-    response = @gateway.purchase(@amount, @credit_card, @options)
+    response = @gateway.purchase(@amount, @payment_id, @options)
     assert_success response
     assert_equal 'OK', response.message
   end
 
+  def test_successful_order
+    response = @gateway.create_order(@amount, @order_options)
+    assert_success response
+    assert_equal 'OK', response.message
+    assert_match 'created', response.params['status']
+    assert response.params['id'] != nil
+    assert_equal @order_options[:order_id], response.params['receipt'] 
+  end
+
   def test_failed_purchase
     # TODO: Add payment initiation call and capture it before purchase call.
-    response = @gateway.purchase(@amount, @declined_card, @options)
-    assert_failure response
-    assert_equal 'Only payments which have been authorized and not yet captured can be captured', response.message
+    # response = @gateway.purchase(@amount, @invalid_payment_id, @options)
+    # assert_failure response
+    # assert_equal 'Only payments which have been authorized and not yet captured can be captured', response.message
   end
 
   def test_successful_authorize_and_capture
-    # Add initiate call before the capture call
-    assert capture = @gateway.capture(@amount, auth.authorization)
-    assert_success capture
-    assert_equal 'OK', capture.message
+    # TODO: Add initiate call and then capture the payment
   end
 
   def test_failed_authorize
-    response = @gateway.authorize(@amount, @declined_card, @options)
+    response = @gateway.authorize(@amount, @invalid_payment_id, @options)
     assert_failure response
     assert_equal 'The id provided does not exist', response.message
   end
 
   def test_partial_capture
-    auth = @gateway.authorize(@amount, @credit_card, @options)
-    assert_success auth
-
-    assert capture = @gateway.capture(@amount-1, auth.authorization)
-    assert_failure capture
-    assert_equal 'Capture amount must be equal to the amount authorized', response.message
+    # TODO: Add partial refuundable order and capture the payment and then refund
   end
 
   def test_failed_capture
@@ -59,30 +64,32 @@ class RemoteRazorpayTest < Test::Unit::TestCase
   end
 
   def test_successful_refund
-    purchase = @gateway.purchase(@amount, @credit_card, @options)
-    assert_success purchase
+    # TODO: create a new payment 
+    # purchase = @gateway.purchase(@amount, @payment_id, @options)
+    # assert_success purchase
 
-    assert refund = @gateway.refund(@amount, purchase.authorization)
+    refund = @gateway.refund(@amount, @payment_id)
     assert_success refund
     assert_equal 'OK', refund.message
+    p refund
   end
 
   def test_partial_refund
-    purchase = @gateway.purchase(@amount, @credit_card, @options)
-    assert_success purchase
+    # purchase = @gateway.purchase(@amount, @payment_id, @options)
+    # assert_success purchase
 
-    assert refund = @gateway.refund(@amount-1, purchase.authorization)
-    assert_success refund
+    # assert refund = @gateway.refund(@amount-1, purchase.authorization)
+    # assert_success refund
   end
 
   def test_failed_refund
-    response = @gateway.refund(@amount, 'test')
-    assert_failure response
-    assert_equal 'The id provided does not exist', response.message
+    # response = @gateway.refund(@amount, 'test')
+    # assert_failure response
+    # assert_equal 'The id provided does not exist', response.message
   end
 
   def test_successful_void
-    assert void = @gateway.void(@credit_card, @options)
+    assert void = @gateway.void(@payment_id, @options)
     assert_success void
     assert_equal 'Razorpay does not support void api', void.message
   end
@@ -90,7 +97,7 @@ class RemoteRazorpayTest < Test::Unit::TestCase
   def test_invalid_login
     gateway = RazorpayGateway.new(key_id: '', key_secret: '')
 
-    response = gateway.purchase(@amount, @credit_card, @options)
+    response = gateway.purchase(@amount, @payment_id, @options)
     assert_failure response
     assert_match "The api key provided is invalid", response.message
   end
