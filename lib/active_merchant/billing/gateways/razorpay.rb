@@ -30,12 +30,12 @@ module ActiveMerchant #:nodoc:
   
         def purchase(money, payment_id, options={})
           # makes payment capture using the payment_id generated from Razorpay checkout SDK
+          # TODO: add payment initiation call and then capture
           capture(money, payment_id, options)
         end
   
         def authorize(money, payment_id, options={})
-          # makes payment capture using the payment_id generated from Razorpay checkout SDK
-          capture(money, payment_id, options)
+          # TODO: add payment initiation call and then check for authorizing it
         end
   
         def capture(money, payment_id, options={})
