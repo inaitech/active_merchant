@@ -63,8 +63,8 @@ module ActiveMerchant
 
       def default_headers
         return {
-        "Content-Type"  : "application/json",
-        "Authorization"]: "basic #{ encoded_credentials }"
+          "Content-Type"  : "application/json",
+          "Authorization" : "basic #{ encoded_credentials }"
         }
       end
 
