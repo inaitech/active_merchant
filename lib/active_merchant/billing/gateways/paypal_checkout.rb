@@ -23,7 +23,7 @@ module ActiveMerchant #:nodoc:
         commit(:post, "v2/checkout/orders", post, options[:headers])
       end
 
-      def authorize(order_id, options)
+      def authorize(order_id, options={})
         requires!({ order_id: order_id }, :order_id)
 
         post = {}
@@ -32,7 +32,7 @@ module ActiveMerchant #:nodoc:
         commit(:post, "v2/checkout/orders/#{ order_id }/authorize", post, options[:headers])
       end
 
-      def capture(order_id, options)
+      def capture(order_id, options={})
         requires!({ order_id: order_id }, :order_id)
 
         post = {}
@@ -41,7 +41,7 @@ module ActiveMerchant #:nodoc:
         commit(:post, "v2/checkout/orders/#{ order_id }/capture", post, options[:headers])
       end
 
-      def refund(capture_id, options={ })
+      def refund(capture_id, options={})
         requires!({ capture_id: capture_id }, :capture_id)
 
         post = {}
@@ -51,13 +51,13 @@ module ActiveMerchant #:nodoc:
         commit(:post, "v2/payments/captures/#{ capture_id }/refund", post, options[:headers])
       end
 
-      def void(authorization_id, options)
+      def void(authorization_id, options={})
         requires!({ authorization_id: authorization_id }, :authorization_id)
         post = {}
         commit(:post, "v2/payments/authorizations/#{ authorization_id }/void", post, options[:headers])
       end
 
-      def do_capture(authorization_id, options)
+      def do_capture(authorization_id, options={})
         requires!(options.merge!({ authorization_id: authorization_id  }), :authorization_id)
 
         post = {}
@@ -70,19 +70,24 @@ module ActiveMerchant #:nodoc:
         commit(:post, "v2/payments/authorizations/#{ authorization_id }/capture", post, options[:headers])
       end
 
-      def get_order_details(order_id, options)
+      def get_order_details(order_id, options={})
         requires!(options.merge(order_id: order_id), :order_id)
         commit(:get, "v2/checkout/orders/#{ order_id }", nil, options[:headers])
       end
 
-      def get_authorization_details(authorization_id, options)
+      def get_authorization_details(authorization_id, options={})
         requires!(options.merge(authorization_id: authorization_id), :authorization_id)
         commit(:get, "v2/payments/authorizations/#{ authorization_id }", nil, options[:headers])
       end
 
-      def get_capture_details(capture_id, options)
+      def get_capture_details(capture_id, options={})
         requires!(options.merge(capture_id: capture_id), :capture_id)
         commit(:get, "v2/payments/captures/#{ capture_id }", nil, options[:headers])
+      end
+
+      def get_refund_details(refund_id, options={})
+        requires!(options.merge(refund_id: refund_id), :refund_id)
+        commit(:get, "v2/payments/refunds/#{ refund_id }", nil, options[:headers])
       end
 
       private
