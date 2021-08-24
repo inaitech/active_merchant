@@ -59,7 +59,6 @@ module ActiveMerchant
           raw_response = response = nil
           parameters = parameters.nil? ? nil : parameters.to_json
           begin
-            p parameters
             raw_response = ssl_request(method, endpoint, parameters, opt_headers)
             response     = parse(raw_response)
           rescue ResponseError => e
