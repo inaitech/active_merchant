@@ -23,14 +23,7 @@ class PaypalExpressRestTest < Test::Unit::TestCase
                 "name": "John Doe",
                 "number": @ppcp_credentials[:card_number],
                 "expiry": "#{ @ppcp_credentials[:year] }-#{ @ppcp_credentials[:month] }",
-                "security_code": @ppcp_credentials[:cvc],
-                "billing_address": {
-                    "address_line_1": "12312 Port Grace Blvd",
-                    "admin_area_2": "La Vista",
-                    "admin_area_1": "NE",
-                    "postal_code": "68128",
-                    "country_code": "US"
-                }
+                "security_code": @ppcp_credentials[:cvc]
             }
         }
     }
@@ -78,13 +71,11 @@ class PaypalExpressRestTest < Test::Unit::TestCase
 
   def test_create_capture_order
     response = @gateway.create_order("CAPTURE", @order_options)
-    puts "Capture Order Id: #{ response.params["id"] }"
     success_status_assertions(response, "CREATED")
   end
 
   def test_create_authorize_order
     response = @gateway.create_order("AUTHORIZE", @order_options)
-    puts "Authorize Order Id: #{ response.params["id"] }"
     success_status_assertions(response, "CREATED")
   end
 
