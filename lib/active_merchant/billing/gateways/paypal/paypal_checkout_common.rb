@@ -35,6 +35,7 @@ module ActiveMerchant
       end
 
       def commit(method, url, parameters = nil, options = {})
+        options = {} unless !options.nil?
         response               = api_request(method, "#{ base_url }/#{ url }", parameters, options)
         success                = success_from(response)
 
