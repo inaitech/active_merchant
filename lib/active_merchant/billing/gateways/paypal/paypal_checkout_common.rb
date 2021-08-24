@@ -26,7 +26,7 @@ module ActiveMerchant
 
 
       def initialize(options = {})
-        requires!(options, :login, :password)
+        requires!(options, :client_id, :client_secret)
         super
       end
 
@@ -69,7 +69,7 @@ module ActiveMerchant
       end
 
       def encoded_credentials
-        Base64.encode64("#{ @options[:authorization][:username] }:#{ @options[:authorization][:password] }").gsub("\n", "")
+        Base64.encode64("#{ @options[:client_id] }:#{ @options[:client_secret] }").gsub("\n", "")
       end
 
       def default_headers
