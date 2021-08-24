@@ -2,7 +2,7 @@ require 'active_merchant/billing/gateways/paypal/paypal_checkout_common'
 
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
-    class PaypalCheckout < Gateway
+    class PaypalCheckoutGateway < Gateway
       include PaypalCheckoutCommon
       
       self.supported_countries = ['AU', 'AT', 'BE', 'BG', 'CA', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'GR', 'HU', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'US', 'GB']
