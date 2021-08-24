@@ -63,8 +63,8 @@ module ActiveMerchant
 
       def default_headers
         return {
-          "Content-Type"  : "application/json",
-          "Authorization" : "basic #{ encoded_credentials }"
+          "Content-Type"  => "application/json",
+          "Authorization" => "Basic #{ encoded_credentials }"
         }
       end
 
@@ -104,7 +104,7 @@ module ActiveMerchant
       end
 
       def success_from(response)
-        !response.key?('name') && response['debug_id'].nil?
+        !response.key?('name') && response['debug_id'].nil? && !response.key?('error')
       end
 
       def supports_scrubbing?
