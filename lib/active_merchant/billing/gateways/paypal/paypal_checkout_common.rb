@@ -8,14 +8,14 @@ module ActiveMerchant
       }
 
       ALLOWED_INTENT              = %w(CAPTURE AUTHORIZE).freeze
-      ALLOWED_PAYMENT_TYPE        = %w(ONE_TIME RECURRING UNSCHEDULED).freeze
-      ALLOWED_NETWORK             = %w(VISA MASTERCARD DISCOVER AMEX SOLO JCB STAR DELTA SWITCH MAESTRO CB_NATIONALE CONFIGOGA CONFIDIS ELECTRON CETELEM CHINA_UNION_PAY).freeze
       ALLOWED_TOKEN_TYPE          = %w(BILLING_AGREEMENT).freeze
-      ALLOWED_PAYMENT_METHOD      = %w(PAYPAL).freeze
+      ALLOWED_ITEM_CATEGORY       = %w(DIGITAL_GOODS PHYSICAL_GOODS).freeze
+      ALLOWED_PHONE_TYPE          = %w(FAX HOME MOBILE OTHER PAGER).freeze
+      ALLOWED_TAX_TYPE            = %w(BR_CPF BR_CNPJ).freeze
 
 
       def initialize(options = {})
-        requires!(options, :login, :password)
+        requires!(options, :client_id, :client_secret)
         super
       end
 
@@ -24,6 +24,7 @@ module ActiveMerchant
       end
 
       def commit(method, url, parameters = nil, options = {})
+        options = {} unless !options.nil?
         response               = api_request(method, "#{ base_url }/#{ url }", parameters, options)
         success                = success_from(response)
 
@@ -58,7 +59,7 @@ module ActiveMerchant
       end
 
       def encoded_credentials
-        Base64.encode64("#{ @options[:authorization][:username] }:#{ @options[:authorization][:password] }").gsub("\n", "")
+        Base64.encode64("#{ @options[:client_id] }:#{ @options[:client_secret] }").gsub("\n", "")
       end
 
       def default_headers
