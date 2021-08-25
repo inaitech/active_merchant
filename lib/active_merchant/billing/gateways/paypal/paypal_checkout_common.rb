@@ -91,15 +91,13 @@ module ActiveMerchant
       end
 
       def message_from(success, response)
-        success ? 'Transaction Successfully Completed' : response['message']
+        success ? response['status'] : response['message']
       end
 
       def json_error(raw_response)
-        msg = 'Invalid response received from the PayPal API. '
-        msg += "  (The raw response returned by the API was #{raw_response.inspect})"
         {
             'error' => {
-                'message' => msg
+                'message' => "#{ raw_response.inspect }"
             }
         }
       end
