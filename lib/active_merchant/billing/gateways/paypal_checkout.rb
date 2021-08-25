@@ -90,12 +90,12 @@ module ActiveMerchant #:nodoc:
       def add_purchase_units(options, post)
         post[:purchase_units] = []
         options.map do |purchase_unit|
-          post[:purchase_units] << add_purchase_unit(purchase_unit)
+          post[:purchase_units] << construct_purchase_unit(purchase_unit)
         end
         post
       end
 
-      def add_purchase_unit(purchase_unit)
+      def construct_purchase_unit(purchase_unit)
         requires!(purchase_unit, :amount)
         purchase_unit_hsh = {}
         purchase_unit_hsh[:reference_id]    = purchase_unit[:reference_id] unless purchase_unit[:reference_id].nil?
