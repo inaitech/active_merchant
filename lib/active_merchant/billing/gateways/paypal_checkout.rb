@@ -193,7 +193,7 @@ module ActiveMerchant #:nodoc:
 
         post[key] = {}
         post[key][:currency_code] = amount[:currency_code] || currency(amount[:value])
-        post[key][:value]         = amount[:value]
+        post[key][:value]         = localized_amount(amount[:value], post[key][:currency_code] || default_currency).to_s
 
         add_breakdown_for_amount(amount[:breakdown], post, key) unless amount[:breakdown].blank?
         post
