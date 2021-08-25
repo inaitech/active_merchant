@@ -11,7 +11,7 @@ class PaypalExpressRestTest < Test::Unit::TestCase
             {
                 'amount': {
                     'currency_code': 'USD',
-                    'value': '10.00'
+                    'value': 1000
                 }
             }
         ]

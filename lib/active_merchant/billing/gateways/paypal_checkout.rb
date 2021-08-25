@@ -17,8 +17,6 @@ module ActiveMerchant #:nodoc:
         post = {}
         add_intent(intent, post)
         add_purchase_units(options[:purchase_units], post)
-        add_payment_instruction(options[:payment_instruction], post) unless options[:payment_instruction].blank?
-        add_application_context(options[:application_context], post) unless options[:application_context].blank?
         add_order_payer(options[:payer], post) unless options[:payer].blank?
         commit(:post, "v2/checkout/orders", post, options[:headers])
       end
@@ -28,7 +26,6 @@ module ActiveMerchant #:nodoc:
 
         post = {}
         add_payment_source(options[:payment_source], post) unless options[:payment_source].nil?
-        add_application_context(options[:application_context], post) unless options[:application_context].nil?
         commit(:post, "v2/checkout/orders/#{ order_id }/authorize", post, options[:headers])
       end
 
@@ -37,7 +34,6 @@ module ActiveMerchant #:nodoc:
 
         post = {}
         add_payment_source(options[:payment_source], post) unless options[:payment_source].nil?
-        add_application_context(options[:application_context], post) unless options[:application_context].nil?
         commit(:post, "v2/checkout/orders/#{ order_id }/capture", post, options[:headers])
       end
 
@@ -46,8 +42,8 @@ module ActiveMerchant #:nodoc:
 
         post = {}
         add_amount(options[:amount], post) unless options[:amount].nil?
-        add_invoice(options[:invoice_id], post) unless options[:invoice_id].nil?
-        add_note(options[:note_to_payer], post) unless options[:note_to_payer].nil?
+        post[:invoice_id]  = options[:invoice_id] unless options[:invoice_id].nil?
+        post[:note_to_payer] = options[:note_to_payer] unless options[:note_to_payer].nil?
         commit(:post, "v2/payments/captures/#{ capture_id }/refund", post, options[:headers])
       end
 
@@ -62,10 +58,9 @@ module ActiveMerchant #:nodoc:
 
         post = {}
         add_amount(options[:amount], post) unless options[:amount].nil?
-        add_invoice(options[:invoice_id], post) unless options[:invoice_id].nil?
-        add_final_capture(options[:final_capture], post) unless options[:final_capture].nil?
-        add_payment_instruction(options[:payment_instruction], post) unless options[:payment_instruction].nil?
-        add_note(options[:note_to_payer], post) unless options[:note_to_payer].nil?
+        post[:invoice_id]    = invoice_id unless options[:invoice_id].nil?
+        post[:final_capture] = final_capture unless options[:final_capture].nil?
+        post[:note_to_payer] = options[:note_to_payer] unless options[:note_to_payer].nil?
 
         commit(:post, "v2/payments/authorizations/#{ authorization_id }/capture", post, options[:headers])
       end
@@ -115,65 +110,7 @@ module ActiveMerchant #:nodoc:
         add_payee(purchase_unit[:payee], purchase_unit_hsh) unless purchase_unit[:payee].nil?
         add_items(purchase_unit[:items], purchase_unit_hsh) unless purchase_unit[:items].nil?
         add_shipping(purchase_unit[:shipping], purchase_unit_hsh) unless purchase_unit[:shipping].nil?
-        add_payment_instruction(purchase_unit[:payment_instruction], purchase_unit_hsh) unless purchase_unit[:payment_instruction].blank?
         purchase_unit_hsh
-      end
-
-      def add_application_context(options, post)
-        post[:application_context] = {}
-        post[:application_context][:return_url]          = options[:return_url] unless options[:return_url].nil?
-        post[:application_context][:cancel_url]          = options[:cancel_url] unless options[:cancel_url].nil?
-        post[:application_context][:landing_page]        = options[:landing_page] unless options[:landing_page].nil? || !ALLOWED_LANDING_PAGE.include?(options[:landing_page])
-        post[:application_context][:locale]              = options[:locale] unless options[:locale].nil?
-        post[:application_context][:user_action]         = options[:user_action] unless options[:user_action].nil? || !ALLOWED_USER_ACTION.include?(options[:user_action])
-        post[:application_context][:brand_name]          = options[:brand_name] unless options[:brand_name].nil?
-        post[:application_context][:shipping_preference] = options[:shipping_preference] unless options[:shipping_preference].nil? || !ALLOWED_SHIPPING_PREFERENCE.include?(options[:shipping_preference])
-
-        add_payment_method(options[:payment_method], post) unless options[:payment_method].nil?
-        add_stored_payment_source(options[:stored_payment_source], post) unless options[:stored_payment_source].nil?
-        skip_empty(post, :application_context)
-      end
-
-      def add_stored_payment_source(options, post)
-        requires!(options, :payment_initiator, :payment_type)
-        post[:stored_payment_source] = {}
-        post[:stored_payment_source][:payment_initiator] = options[:payment_initiator] if ALLOWED_PAYMENT_INITIATOR.include?(options[:payment_initiator])
-        post[:stored_payment_source][:payment_type]      = options[:payment_type] if ALLOWED_PAYMENT_TYPE.include?(options[:payment_type])
-        post[:stored_payment_source][:usage]             = options[:usage] if ALLOWED_USAGE.include?(options[:usage])
-        add_network_transaction_reference(options[:previous_network_transaction_reference], post)
-        skip_empty(post, :stored_payment_source)
-      end
-
-      def add_network_transaction_reference(options, post)
-        requires!(options, :id, :network)
-        post[:previous_network_transaction_reference] = {}
-        post[:previous_network_transaction_reference][:id]      = options[:id]
-        post[:previous_network_transaction_reference][:date]    = options[:date]
-        post[:previous_network_transaction_reference][:network] = options[:network] if ALLOWED_NETWORK.include?(options[:network])
-        post
-      end
-
-      def add_payment_method(options, post)
-        post[:payment_method] = {}
-        post[:payment_method][:payer_selected]            = options[:payer_selected]
-        post[:payment_method][:payee_preferred]           = options[:payee_preferred] if ALLOWED_PAYEE_PREFERRED.include?(options[:payee_preferred])
-        post[:payment_method][:standard_entry_class_code] = options[:standard_entry_class_code] if ALLOWED_STANDARD_ENTRIES.include?(options[:standard_entry_class_code])
-        skip_empty(post, :payment_method)
-      end
-
-      def add_payment_instruction(options, post, key=:payment_instruction)
-        post[key]                     = {}
-        post[key][:platform_fees]     = []
-        post[key][:disbursement_mode] = options[:disbursement_mode] unless options[:disbursement_mode].nil? || !ALLOWED_DISBURSEMENT_MODE.include(options[:disbursement_mode])
-
-        options[:platform_fees].map do |platform_fee|
-          requires!(platform_fee, :amount, :payee)
-          platform_fee_hsh = {}
-          add_amount(platform_fee[:amount], platform_fee_hsh)
-          add_payee(platform_fee[:payee], platform_fee_hsh)
-          post[key][:platform_fees] << platform_fee_hsh
-        end
-        skip_empty(post, key)
       end
 
       def add_intent(intent, post)
@@ -269,21 +206,6 @@ module ActiveMerchant #:nodoc:
         obj_hsh[:billing_address][:postal_code]    = address[:postal_code] unless address[:postal_code].nil?
         obj_hsh[:billing_address][:country_code]   = address[:country_code] unless address[:country_code].nil?
         obj_hsh
-      end
-
-      def add_invoice(invoice_id, post)
-        post[:invoice_id]  = invoice_id
-        post
-      end
-
-      def add_final_capture(final_capture, post)
-        post[:final_capture] = final_capture
-        post
-      end
-
-      def add_note(note, post)
-        post[:note_to_payer] = note
-        post
       end
 
       def add_payment_source(source, post)
