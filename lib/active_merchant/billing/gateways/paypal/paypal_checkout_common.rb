@@ -91,7 +91,7 @@ module ActiveMerchant
       end
 
       def message_from(success, response)
-        success ? response['status'] : ( response['message'] || response['error_description']
+        success ? response['status'] : (response['message'] || response['error_description'])
       end
 
       def json_error(raw_response)
