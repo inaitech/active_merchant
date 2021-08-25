@@ -86,12 +86,12 @@ module ActiveMerchant
 
       def error_code_from(response)
         return if success_from(response)
-        code = response['name']
+        code = response['name'] || response['error']
         code&.to_s
       end
 
       def message_from(success, response)
-        success ? response['status'] : response['message']
+        success ? response['status'] : ( response['message'] || response['error_description']
       end
 
       def json_error(raw_response)
