@@ -8,18 +8,7 @@ module ActiveMerchant
       }
 
       ALLOWED_INTENT              = %w(CAPTURE AUTHORIZE).freeze
-      ALLOWED_PAYMENT_TYPE        = %w(ONE_TIME RECURRING UNSCHEDULED).freeze
-      ALLOWED_NETWORK             = %w(VISA MASTERCARD DISCOVER AMEX SOLO JCB STAR DELTA SWITCH MAESTRO CB_NATIONALE CONFIGOGA CONFIDIS ELECTRON CETELEM CHINA_UNION_PAY).freeze
       ALLOWED_TOKEN_TYPE          = %w(BILLING_AGREEMENT).freeze
-      ALLOWED_PAYMENT_METHOD      = %w(PAYPAL).freeze
-      ALLOWED_LANDING_PAGE        = %w(LOGIN BILLING NO_PREFERENCE).freeze
-      ALLOWED_USER_ACTION         = %w(CONTINUE PAY_NOW).freeze
-      ALLOWED_SHIPPING_PREFERENCE = %w(NO_SHIPPING GET_FROM_FILE SET_PROVIDED_ADDRESS).freeze
-      ALLOWED_PAYMENT_INITIATOR   = %w(CUSTOMER MERCHANT).freeze
-      ALLOWED_USAGE               = %w(FIRST SUBSEQUENT DERIVED).freeze
-      ALLOWED_PAYEE_PREFERRED     = %w(UNRESTRICTED IMMEDIATE_PAYMENT_REQUIRED).freeze
-      ALLOWED_DISBURSEMENT_MODE   = %w(INSTANT DELAYED).freeze
-      ALLOWED_STANDARD_ENTRIES    = %w(TEL WEB CCD PPD).freeze
       ALLOWED_ITEM_CATEGORY       = %w(DIGITAL_GOODS PHYSICAL_GOODS).freeze
       ALLOWED_PHONE_TYPE          = %w(FAX HOME MOBILE OTHER PAGER).freeze
       ALLOWED_TAX_TYPE            = %w(BR_CPF BR_CNPJ).freeze
@@ -75,8 +64,8 @@ module ActiveMerchant
 
       def default_headers
         return {
-          "Content-Type" => "application/json",
-          "Authorization" => "basic #{ encoded_credentials }"
+          "Content-Type"  => "application/json",
+          "Authorization" => "Basic #{ encoded_credentials }"
         }
       end
 
@@ -116,7 +105,7 @@ module ActiveMerchant
       end
 
       def success_from(response)
-        !response.key?('name') && response['debug_id'].nil?
+        !response.key?('name') && response['debug_id'].nil? && !response.key?('error')
       end
 
       def supports_scrubbing?
