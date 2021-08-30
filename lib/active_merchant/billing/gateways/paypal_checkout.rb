@@ -237,8 +237,8 @@ module ActiveMerchant #:nodoc:
             month: card[:expiry].split("-")[1].to_i,
             year: card[:expiry].split("-")[0].to_i
         }
-        @visa_card = ActiveMerchant::Billing::CreditCard.new(defaults)
-        raise "Invalid Credit Card Format. Message: Missing #{@visa_card.validate}" unless @visa_card.validate.empty?
+        @card_object = ActiveMerchant::Billing::CreditCard.new(defaults)
+        raise "Invalid Credit Card Format. Message: Missing #{@card_object.validate}" unless @card_object.validate.empty?
       end
 
       def add_token(options, post)
