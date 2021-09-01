@@ -9,7 +9,7 @@ module ActiveMerchant #:nodoc:
       self.homepage_url        = 'https://www.paypal.com/us/business/platforms-and-marketplaces'
       self.display_name        = 'PayPal Commerce Platform'
       self.default_currency    = 'USD'
-      self.supported_cardtypes = [:visa, :master, :american_express, :discover, :jcb]
+      self.supported_cardtypes = [:visa, :master, :american_express, :discover, :jcb, :diners_club]
 
       def create_order(intent, options)
         requires!(options.merge!(intent.nil? ? {} : { intent: intent}), :intent, :purchase_units)
