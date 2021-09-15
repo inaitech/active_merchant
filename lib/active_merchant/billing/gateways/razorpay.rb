@@ -167,8 +167,10 @@ module ActiveMerchant #:nodoc:
   
         def error_code_from(response)
           unless success_from(response)
-            # TODO: lookup error code for this response
-            response['error_description']
+          if response['error']
+            response['error']['code']
+          else
+            'BAD_REQUEST_ERROR'
           end
         end
       end
