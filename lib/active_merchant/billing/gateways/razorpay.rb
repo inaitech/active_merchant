@@ -4,7 +4,7 @@ module ActiveMerchant #:nodoc:
         self.live_url = 'https://api.razorpay.com/v1'
         self.supported_countries = ['IN']
         self.default_currency = 'INR'
-        self.supported_cardtypes = [:visa, :mastercard, :maestro, :rupay, :amex, :discover]
+        self.supported_cardtypes = [:visa, :mastercard, :maestro, :rupay, :amex, :diners_club, :bajaj]
   
         self.homepage_url = 'http://razorpay.com'
         self.display_name = 'Razorpay'
@@ -26,16 +26,6 @@ module ActiveMerchant #:nodoc:
           post[:notes] = options[:notes] if options[:notes]
           post[:partial_payment] = options[:partial_payment] if options[:partial_payment]
           commit(:post, 'order', {}, post)
-        end
-  
-        def purchase(money, payment_id, options={})
-          # makes payment capture using the payment_id generated from Razorpay checkout SDK
-          # TODO: add payment initiation call and then capture
-          capture(money, payment_id, options)
-        end
-  
-        def authorize(money, payment_id, options={})
-          # TODO: add payment initiation call and then check for authorizing it
         end
   
         def capture(money, payment_id, options={})
@@ -60,36 +50,14 @@ module ActiveMerchant #:nodoc:
           Response.new(true, 'Razorpay does not support void api')
         end
   
-        def verify(credit_card, options={})
-          # No supporting API found so far
-        end
-  
         def supports_scrubbing?
           false
         end
   
         private
   
-        def add_invoice(post, money, options)
-          post[:currency] = (options[:currency] || currency(money))
-          post[:method] = 'card'
-          post[:contact] = options[:phone]
-          post[:email] = options[:email]
-        end
-  
         def add_amount(post, money)
           post[:amount] = amount(money)
-        end
-  
-  
-        def add_credit_card(post, payment)
-          post[:card] = {
-            number: payment.number,
-            cvv: payment.verification_value,
-            name: "#{payment.first_name} #{payment.last_name}",
-            expiry_month: payment.month,
-            expiry_year: payment.year,
-          }
         end
   
         def parse(body)
