@@ -136,7 +136,7 @@ module ActiveMerchant #:nodoc:
         def error_code_from(response)
           unless success_from(response)
             if response['error']
-              response['error']['code']
+              if response['error']['reason'] ? response['error']['reason'] : response['error']['code']
             else
               'BAD_REQUEST_ERROR'
             end
