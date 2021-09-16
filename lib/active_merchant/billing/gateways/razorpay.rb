@@ -104,8 +104,8 @@ module ActiveMerchant #:nodoc:
             message_from(response),
             response,
             authorization: authorization_from(response),
-            avs_result: {code: 'Y'},
-            cvv_result: 'M',
+            avs_result: nil,
+            cvv_result: nil,
             test: test?,
             error_code: error_code_from(response)
           )
@@ -136,7 +136,11 @@ module ActiveMerchant #:nodoc:
         def error_code_from(response)
           unless success_from(response)
             if response['error']
-              if response['error']['reason'] ? response['error']['reason'] : response['error']['code']
+              if response['error']['reason'] != "NA"
+                response['error']['reason']
+              else
+                response['error']['code']
+              end
             else
               'BAD_REQUEST_ERROR'
             end
