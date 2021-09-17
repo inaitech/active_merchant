@@ -27,6 +27,13 @@ module ActiveMerchant #:nodoc:
           post[:partial_payment] = options[:partial_payment] if options[:partial_payment]
           commit(:post, 'order', {}, post)
         end
+
+        def get_payment(payment_id, options={})
+          return Response.new(false, 'Payment ID is mandatory') if payment_id.empty?
+          parameters = {}
+          parameters[:authorization_id] = payment_id
+          commit(:get, 'fetch', parameters)
+        end
   
         def capture(money, payment_id, options={})
           return Response.new(false, 'Payment ID is mandatory') if payment_id.empty?
@@ -72,6 +79,8 @@ module ActiveMerchant #:nodoc:
             "payments/#{parameters[:authorization_id]}/refund"
           when 'capture'
             "payments/#{parameters[:authorization_id]}/capture"
+          when 'fetch'
+            "payments/#{parameters[:authorization_id]}"
           end
         end
 
@@ -95,7 +104,7 @@ module ActiveMerchant #:nodoc:
   
         def commit(method, action, parameters, body={})
           url = url(action, parameters)
-          post = post_data(action, body)
+          post = post_data(method, body)
   
           response = api_request(method, url, post)
   
@@ -129,8 +138,12 @@ module ActiveMerchant #:nodoc:
           response['id']
         end
 
-        def post_data(action, parameters={})
-          parameters.to_json
+        def post_data(method, parameters={})
+          if method == :get || method == :delete
+            nil
+          else
+            parameters.to_json
+          end
         end
   
         def error_code_from(response)
@@ -141,6 +154,10 @@ module ActiveMerchant #:nodoc:
               else
                 response['error']['code']
               end
+            elsif response["error_reason"]
+              response["error_reason"]
+            elsif response["error_code"]
+              response["error_code"]
             else
               'BAD_REQUEST_ERROR'
             end
