@@ -5,7 +5,7 @@ class RemoteRazorpayTest < Test::Unit::TestCase
     @gateway = RazorpayGateway.new(fixtures(:razorpay))
 
     @amount = 10000
-    @payment_id = 'pay_I04jzUiVVn1bmr'
+    @payment_id = 'pay_HziML4B8Uybcvr'
     @unauthorized_payment_id = 'pay_HyQdXlAAwUuNxt'
     @invalid_payment_id = 'pay_HnTllcQFCxVGNU'
     @options = {
@@ -51,10 +51,22 @@ class RemoteRazorpayTest < Test::Unit::TestCase
     assert_equal 'OK', refund.message
   end
 
-  def test_C_successful_full_refund
+  def test_C_failed_refund_amount_lower_than_100
+    refund = @gateway.refund(@payment_id, {"amount": 50})
+    assert_failure refund
+    assert_equal 'The amount must be atleast INR 1.00', refund.message
+  end
+
+  def test_D_successful_full_refund
     refund = @gateway.refund(@payment_id)
     assert_success refund
     assert_equal 'OK', refund.message
+  end
+
+  def test_E_failed_refund_aleady_refunded_payment
+    refund = @gateway.refund(@payment_id)
+    assert_failure refund
+    assert_equal 'The payment has been fully refunded already', refund.message
   end
 
   def test_successful_void
