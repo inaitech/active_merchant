@@ -471,9 +471,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def error_code_from_result(result)
-        p result
+        p result.as_json()
         if result.success?
           nil
+        end
+        if result.transaction
+          result.transaction.processor_response_code
+        elsif result.errors.size == 0 && result.credit_card_verification
+          result.credit_card_verification.processor_response_code
         elsif result.errors.size > 0
           result.errors.first.code
         end
