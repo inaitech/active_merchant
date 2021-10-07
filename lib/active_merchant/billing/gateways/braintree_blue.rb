@@ -404,6 +404,7 @@ module ActiveMerchant #:nodoc:
           options[:avs_result] = { code: avs_code_from(result.transaction) }
           options[:cvv_result] = result.transaction.cvv_response_code
           options[:error_code] = error_code_from_result(result)
+          p options
         end
         options[:test] = test?
         options
@@ -471,7 +472,6 @@ module ActiveMerchant #:nodoc:
       end
 
       def error_code_from_result(result)
-        p result.as_json()
         if result.success?
           nil
         end
