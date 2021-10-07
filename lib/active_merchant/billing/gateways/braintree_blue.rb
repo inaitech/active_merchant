@@ -404,7 +404,6 @@ module ActiveMerchant #:nodoc:
           options[:avs_result] = { code: avs_code_from(result.transaction) }
           options[:cvv_result] = result.transaction.cvv_response_code
           options[:error_code] = error_code_from_result(result)
-          p options
         end
         options[:test] = test?
         options
@@ -490,6 +489,7 @@ module ActiveMerchant #:nodoc:
           result = @braintree_gateway.transaction.send(transaction_type, transaction_params)
           response = Response.new(result.success?, message_from_transaction_result(result), response_params(result), response_options(result))
           response.cvv_result['message'] = ''
+          p response
           response
         end
       end
