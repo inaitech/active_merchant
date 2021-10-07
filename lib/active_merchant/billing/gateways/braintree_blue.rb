@@ -482,12 +482,7 @@ module ActiveMerchant #:nodoc:
         transaction_params = create_transaction_parameters(money, credit_card_or_vault_id, options)
         commit do
           result = @braintree_gateway.transaction.send(transaction_type, transaction_params)
-          response = Response.new(
-            result.success?, 
-            message_from_transaction_result(result), 
-            response_params(result), 
-            response_options(result)
-          )
+          response = Response.new(result.success?, message_from_transaction_result(result), response_params(result), response_options(result))
           response.cvv_result['message'] = ''
           response
         end
