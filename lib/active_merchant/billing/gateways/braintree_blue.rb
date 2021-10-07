@@ -466,6 +466,7 @@ module ActiveMerchant #:nodoc:
         elsif result.errors.size == 0 && result.credit_card_verification
           result.credit_card_verification.processor_response_code
         elsif result.errors.size > 0
+          p result.errors.as_json()
           result.errors.first.code
         end
       end
