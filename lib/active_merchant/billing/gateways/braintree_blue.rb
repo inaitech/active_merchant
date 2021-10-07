@@ -381,6 +381,7 @@ module ActiveMerchant #:nodoc:
           message_from_result(result),
           response_hash,
           authorization: result.transaction&.id,
+          error_code: error_code_from_result(result.success?, result),
           test: test?
         )
       end
@@ -468,11 +469,26 @@ module ActiveMerchant #:nodoc:
         end
       end
 
+      def error_code_from_result(succeeded, result)
+        if succeeded
+          nil
+        end
+        if result.errors.size > 0
+          result.errors.first.code
+        end
+      end
+
       def create_transaction(transaction_type, money, credit_card_or_vault_id, options)
         transaction_params = create_transaction_parameters(money, credit_card_or_vault_id, options)
         commit do
           result = @braintree_gateway.transaction.send(transaction_type, transaction_params)
-          response = Response.new(result.success?, message_from_transaction_result(result), response_params(result), response_options(result))
+          response = Response.new(
+            result.success?, 
+            message_from_transaction_result(result), 
+            response_params(result), 
+            response_options(result),
+            error_code: error_code_from_result(result.success?, result)
+          )
           response.cvv_result['message'] = ''
           response
         end
