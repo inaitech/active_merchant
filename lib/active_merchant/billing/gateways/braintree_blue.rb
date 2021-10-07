@@ -476,7 +476,7 @@ module ActiveMerchant #:nodoc:
 
       def error_code_from_result(result)
         if result.success?
-          nil
+          return nil
         end
         response_code_from_result(result)
       end
