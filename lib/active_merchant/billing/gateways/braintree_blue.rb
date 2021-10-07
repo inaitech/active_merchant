@@ -395,7 +395,9 @@ module ActiveMerchant #:nodoc:
 
       def response_options(result)
         options = {}
-        options[:error_code] = error_code_from_result(result)
+        unless result.success?
+          options[:error_code] = error_code_from_result(result)
+        end
         if result.credit_card_verification
           options[:authorization] = result.credit_card_verification.id
           options[:avs_result] = { code: avs_code_from(result.credit_card_verification) }
