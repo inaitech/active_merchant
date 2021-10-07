@@ -403,6 +403,7 @@ module ActiveMerchant #:nodoc:
           options[:authorization] = result.transaction.id
           options[:avs_result] = { code: avs_code_from(result.transaction) }
           options[:cvv_result] = result.transaction.cvv_response_code
+          options[:error_code] = error_code_from_result(result)
         end
         options[:test] = test?
         options
@@ -485,8 +486,7 @@ module ActiveMerchant #:nodoc:
             result.success?, 
             message_from_transaction_result(result), 
             response_params(result), 
-            response_options(result),
-            error_code: error_code_from_result(result)
+            response_options(result)
           )
           response.cvv_result['message'] = ''
           response
