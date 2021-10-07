@@ -381,7 +381,7 @@ module ActiveMerchant #:nodoc:
           message_from_result(result),
           response_hash,
           authorization: result.transaction&.id,
-          error_code: error_code_from_result(result.success?, result),
+          error_code: error_code_from_result(result),
           test: test?
         )
       end
@@ -469,11 +469,10 @@ module ActiveMerchant #:nodoc:
         end
       end
 
-      def error_code_from_result(succeeded, result)
-        if succeeded
+      def error_code_from_result(result)
+        if result.success?
           nil
-        end
-        if result.errors.size > 0
+        elsif result.errors.size > 0
           result.errors.first.code
         end
       end
@@ -487,7 +486,7 @@ module ActiveMerchant #:nodoc:
             message_from_transaction_result(result), 
             response_params(result), 
             response_options(result),
-            error_code: error_code_from_result(result.success?, result)
+            error_code: error_code_from_result(result)
           )
           response.cvv_result['message'] = ''
           response
