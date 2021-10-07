@@ -267,7 +267,8 @@ module ActiveMerchant #:nodoc:
               customer_vault_id: (result.customer.id if result.success?),
               credit_card_token: (result.customer.credit_cards[0].token if result.success?)
             },
-            authorization: (result.customer.id if result.success?))
+            authorization: (result.customer.id if result.success?),
+            error_code: error_code_from_result(result))
         end
       end
 
@@ -296,7 +297,8 @@ module ActiveMerchant #:nodoc:
               customer_vault_id: (result.credit_card.customer_id if result.success?),
               credit_card_token: (result.credit_card.token if result.success?)
             },
-            authorization: (result.credit_card.customer_id if result.success?)
+            authorization: (result.credit_card.customer_id if result.success?,
+            error_code: error_code_from_result(result))
           )
         end
       end
