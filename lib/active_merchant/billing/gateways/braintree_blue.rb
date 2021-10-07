@@ -471,6 +471,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def error_code_from_result(result)
+        p result
         if result.success?
           nil
         elsif result.errors.size > 0
