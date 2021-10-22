@@ -227,7 +227,7 @@ class RemoteDLocalTest < Test::Unit::TestCase
     assert_match 'Invalid parameter: wallet.verify', response.message
   end
 
-  def test_failed_offsite_address_empty_india
+  def test_offsite_payment_when_address_empty_and_country_india_then_failed
     response = @gateway.initiate(@amount, @wallet_token, @offsite_payment_options_india.update(billing_address: {'country': 'IN'}))
     assert_failure response
     assert_match 'Missing parameter: payer.address', response.message
