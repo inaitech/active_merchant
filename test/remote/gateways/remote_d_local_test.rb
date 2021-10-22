@@ -69,6 +69,16 @@ class RemoteDLocalTest < Test::Unit::TestCase
       callback_url: 'https://example.com/callback',
       notification_url: 'https://example.com/notify'
     }
+    @offsite_payment_options_mexico = {
+      billing_address: address(country: 'Mexico'),
+      document: '42243309114',
+      currency: 'MXN',
+      label: 'Test payment',
+      payment_method_id: 'SE',
+      payment_method_flow: 'REDIRECT',
+      callback_url: 'https://example.com/callback',
+      notification_url: 'https://example.com/notify'
+    }
   end
 
   def test_successful_purchase
@@ -237,6 +247,24 @@ class RemoteDLocalTest < Test::Unit::TestCase
     response = @gateway.initiate(0, @wallet_token, @offsite_payment_options.merge(save: true))
     assert_failure response
     assert_match 'Amount too low', response.message
+  end
+
+  def test_offsite_payment_mexico_SE_REDIRECT
+    response = @gateway.initiate(100, nil, @offsite_payment_options_mexico)
+    assert_success response
+    assert_match 'The payment is pending.', response.message
+    assert_equal '100', response.params["status_code"]
+    assert response.params["redirect_url"].present?
+    assert response.authorization.present?
+  end
+
+  def test_offsite_payment_mexico_OX_REDIRECT
+    response = @gateway.initiate(100, nil, @offsite_payment_options_mexico.update({payment_method_id: 'OX'}))
+    assert_success response
+    assert_match 'The payment is pending.', response.message
+    assert_equal '100', response.params["status_code"]
+    assert response.params["redirect_url"].present?
+    assert response.authorization.present?
   end
 
   def test_successful_authorize_and_capture

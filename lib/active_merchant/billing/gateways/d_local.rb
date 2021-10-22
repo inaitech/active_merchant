@@ -86,10 +86,14 @@ module ActiveMerchant #:nodoc:
         post[:payment_method_flow] = options[:payment_method_flow] || 'DIRECT'
         add_country(post, card, options)
         add_payer(post, card, options)
-        if card.is_a?(WalletToken)
-          add_wallet(post, card, action, options)
-        else
-          add_card(post, card, action, options)
+        
+        # check for dlocal redirect payment methods 
+        if card.present?
+          if card.is_a?(WalletToken)
+            add_wallet(post, card, action, options)
+          else
+            add_card(post, card, action, options)
+          end
         end
         post[:order_id] = options[:order_id] || generate_unique_id
         post[:description] = options[:description] if options[:description]
