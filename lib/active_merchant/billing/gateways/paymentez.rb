@@ -241,7 +241,11 @@ module ActiveMerchant #:nodoc:
 
       def commit_raw(object, action, parameters)
         url = "#{(test? ? test_url : live_url)}#{object}/#{action}"
-
+        print("\n##### commit raw ######\n")
+        print(url)
+        print("\n###### post data ##########\n")
+        print(post_data(parameters))
+        print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         begin
           raw_response = ssl_post(url, post_data(parameters), headers)
         rescue ResponseError => e
@@ -256,8 +260,13 @@ module ActiveMerchant #:nodoc:
       end
 
       def commit_transaction(action, parameters)
+        print("\n################ parameters #############@@@@@@@@@@@@@@@@\n")
+        print(parameters)
+        print("\n@@@@@@@@@@ \n")
         response = commit_raw('transaction', action, parameters)
-
+        print("\n################### response in commit_transaction ##########@@@@@@@@@@@@@@@@\n")
+        print(response)
+        print("\n @@@@@@@@@@ \n")
         Response.new(
           success_from(response),
           message_from(response),
@@ -288,9 +297,6 @@ module ActiveMerchant #:nodoc:
       end
 
       def success_from(response)
-        print("##############\n")
-        print(response)
-        print("\n##############\n")
         print("\nprinting response transaction\n")
         print(response['transaction'])
         print("\n##############\n")
