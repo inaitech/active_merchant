@@ -288,10 +288,12 @@ module ActiveMerchant #:nodoc:
       end
 
       def success_from(response)
-        print("##############")
+        print("##############\n")
         print(response)
-        print("##############")
+        print("\n##############\n")
+        print("\nprinting response transaction\n")
         print(response['transaction'])
+        print("\n##############\n")
         return true if response['transaction'] && response['transaction']['status_detail'] == OTP_STATUS_SUCCESS
         return true if response['status_detail'] == OTP_STATUS_PENDING
         return true if response['status_detail'] == OTP_STATUS_SUCCESS
