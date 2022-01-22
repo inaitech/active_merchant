@@ -159,8 +159,8 @@ module ActiveMerchant #:nodoc:
         print(options)
         print("\n===========================================\n")
         print("\n____________ in verify dat ______________\n")
-         post[:user] ||= {}
-        print( post[:user][:id])
+         post[:transaction_id] ||= {}
+        print( post[:transaction_id][:id])
         print("\n===========================================\n")
         requires!(options, :user_id, :transaction_id, :otp)
 
