@@ -155,6 +155,13 @@ module ActiveMerchant #:nodoc:
       private
 
       def add_verify_data(post,options)
+        print("\n____________ in verify dat ______________\n")
+        print(options)
+        print("\n===========================================\n")
+        print("\n____________ in verify dat ______________\n")
+         post[:user] ||= {}
+        print( post[:user][:id])
+        print("\n===========================================\n")
         requires!(options, :user_id, :transaction_id, :otp)
 
         post[:user] ||= {}
