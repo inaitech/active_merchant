@@ -255,6 +255,9 @@ module ActiveMerchant #:nodoc:
         print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         begin
           raw_response = ssl_post(url, post_data(parameters), headers)
+          print("\n###### commit_raw response ##########\n")
+        print(post_data(raw_response))
+        print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         rescue ResponseError => e
           raw_response = e.response.body
         end
