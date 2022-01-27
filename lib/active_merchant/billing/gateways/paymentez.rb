@@ -172,6 +172,7 @@ module ActiveMerchant #:nodoc:
 
         post[:type] = options[:type] 
         post[:value] = options[:otp]
+        post[:more_info] = true
       end
 
       def add_customer_data(post, options)
