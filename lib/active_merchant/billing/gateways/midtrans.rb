@@ -20,32 +20,33 @@ module ActiveMerchant #:nodoc:
          :telkomsel_cash, :xl_tunai, :indosat_dompetku, :mandiri_ecash, :cstor]
 
       STATUS_CODE_MAPPING = {
-        sucess: 200,
-        pending_or_challenge: 201,
-        denied: 202,
+        200 => "SUCCESS",
+        201 => "PENDING",
+        202 => "DENIED",
 
-        move_permanently: 300,
+        400 => "VALIDATION_ERROR",
+        401 => "UNAUTHORIZED_TRANSACTION",
+        402 => "PAYMENT_TYPE_ACCESS_DENIED",
+        403 => "INVALID_REQUEST_FORMAT",
+        404 => "RESOURCE_NOT_FOUND",
+        405 => "HTTP_METHOD_NOT_ALLOWED",
+        406 => "DUPLICATED_ORDER_ID",
+        407 => "EXPIRED_TRANSACTION",
+        408 => "INVALID_DATA_TYPE",
+        409 => "TOO_MANY_REQUESTS_FOR_SAME_CARD",
+        410 => "ACCOUNT_DEACTIVATED",
+        411 => "MISSING_TOKEN_ID",
+        412 => "CANNOT_MODIFY_TRANSACTION",
+        413 => "MALFORMED_REQUEST",
+        414 => "REFUND_REECTED_INSUFFICIENT_FUNDS",
+        429 => "RATELIMIT_EXCEEDED",
 
-        validation_error: 400,
-        access_denied: 401,
-        payment_type_access_denined: 402,
-        invalid_content_header: 403,
-        resouce_not_found: 404,
-        http_method_not_allowed: 405,
-        duplicated_order_id: 406,
-        expired_transaction: 407,
-        wrong_data_type: 408,
-        too_much_transactions: 409,
-        account_deactivated: 410,
-        token_error: 411,
-        cannot_modify_transaction_status: 412,
-        malformed_syntax_error: 413,
-
-        internal_server_error: 500,
-        feature_unavailable: 501,
-        bank_connection_problem: 502,
-        service_unavailable: 503,
-        fraud_detections_unavailable: 504
+        500 => "INTERNAL_SERVER_ERROR",
+        501 => "FEATURE_UNAVAILABLE",
+        502 => "BANK_SERVER_CONNECTION_FAILURE",
+        503 => "BANK_SERVER_CONNECTION_FAILURE",
+        504 => "FRAUD_DETECTION_UNAVAILABLE",
+        505 => "VA_CREATION_FAILED"
       }
 
       TRANSACTION_STATUS_MAPPING = {
@@ -99,7 +100,7 @@ module ActiveMerchant #:nodoc:
         # add_address(post, options)
         # add_customer_data(post, options)
 
-        commit('charge', post)
+        charge(post)
       end
 
       def approve(payment, options = {})
@@ -163,12 +164,20 @@ module ActiveMerchant #:nodoc:
         post[:credit_card][:token_id] = token_id
       end
 
+      def url()
+        "#{(test? ? test_url : live_url)}"
+      end
+
       def tokenize_card(card)
         @uri = URI.parse(
-          "https://api.sandbox.midtrans.com/v2/token?card_number=#{card.number}&card_cvv=#{card.verification_value}&card_exp_month=#{card.month}&card_exp_year=#{card.year}&client_key=#{@midtrans_gateway.config.client_key}"
+          "#{url()}/token?card_number=#{card.number}&card_cvv=#{card.verification_value}&card_exp_month=#{card.month}&card_exp_year=#{card.year}&client_key=#{@midtrans_gateway.config.client_key}"
         )
-        response = Net::HTTP.get_response(@uri)
-        return JSON.parse(response.body)["token_id"]
+        begin
+          response = Net::HTTP.get_response(@uri)
+          JSON.parse(response.body)["token_id"]
+        rescue ResponseError => e
+          Response.new(false, e.response.message)
+        end
       end
 
       def add_authorization(post, money, authorization)
@@ -176,13 +185,12 @@ module ActiveMerchant #:nodoc:
         post[:gross_amount] = money
       end
 
-      def commit(action, parameters)
+      def charge(parameters)
         begin
-          gateway_response = @midtrans_gateway.public_send(action.to_sym, parameters)
+          gateway_response = @midtrans_gateway.charge(parameters)
           response_for(gateway_response)
-        rescue MidtransError => e
-          p e
-          Response.new(false, e.status_message)
+        rescue MidtransError => error
+          error_response_for(error)
         end
       end
 
@@ -203,12 +211,28 @@ module ActiveMerchant #:nodoc:
         gateway_response.transaction_id
       end
 
+      def error_code_from(response)
+        code = response.status
+        STATUS_CODE_MAPPING[code.to_i]
+      end
+
+      def error_response_for(gateway_response)
+        response = eval(gateway_response.data)
+        Response.new(
+          false,
+          response["status_message"],
+          response,
+          authorization: response["id"],
+          test: test?,
+          error_code: error_code_from(gateway_response)
+        )
+      end
+
       def response_for(gateway_response)
         Response.new(
           success_from(gateway_response),
           message_from(gateway_response),
           gateway_response.data,
-          status_code: gateway_response.status_code,
           authorization: authorization_from(gateway_response),
           test: test?
         )

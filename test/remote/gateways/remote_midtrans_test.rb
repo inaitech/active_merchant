@@ -15,12 +15,13 @@ class RemoteMidtransTest < Test::Unit::TestCase
     @accepted_card = credit_card('4811111111111114')
     @card_payment_options = {
       payment_type: 'credit_card',
-      order_id: SecureRandom.uuid
+      order_id: "abc"
     }
   end
 
   def test_successful_purchase
     response = @gateway.purchase(200, @accepted_card, @card_payment_options)
+    p response
     assert_success response
     assert_equal response.params["status_code"], "200"
   end
