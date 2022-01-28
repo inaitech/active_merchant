@@ -77,7 +77,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def authorize(money, payment, options={})
-        payment[:credit_card][:type] = TRANSACTION_STATUS_MAPPING[:authorize]
+        options[:transaction_type] = TRANSACTION_STATUS_MAPPING[:authorize]
         purchase(money, payment, options)
       end
 
@@ -99,7 +99,6 @@ module ActiveMerchant #:nodoc:
         add_payment(post, payment, options)
         # add_address(post, options)
         # add_customer_data(post, options)
-
         charge(post)
       end
 
@@ -162,6 +161,7 @@ module ActiveMerchant #:nodoc:
         post[:credit_card] = {}
         token_id = tokenize_card(payment)
         post[:credit_card][:token_id] = token_id
+        post[:credit_card][:type] = options[:transaction_type] if options[:transaction_type]
       end
 
       def url()
@@ -211,9 +211,9 @@ module ActiveMerchant #:nodoc:
         gateway_response.transaction_id
       end
 
-      def error_code_from(response)
-        code = response.status
-        STATUS_CODE_MAPPING[code.to_i]
+      def error_code_from(status)
+        return nil if %w[200 201].include? status.to_i
+        STATUS_CODE_MAPPING[status.to_i]
       end
 
       def error_response_for(gateway_response)
@@ -224,7 +224,7 @@ module ActiveMerchant #:nodoc:
           response,
           authorization: response["id"],
           test: test?,
-          error_code: error_code_from(gateway_response)
+          error_code: error_code_from(gateway_response.status)
         )
       end
 
@@ -234,7 +234,8 @@ module ActiveMerchant #:nodoc:
           message_from(gateway_response),
           gateway_response.data,
           authorization: authorization_from(gateway_response),
-          test: test?
+          test: test?,
+          error_code: error_code_from(gateway_response.status_code)
         )
       end
     end

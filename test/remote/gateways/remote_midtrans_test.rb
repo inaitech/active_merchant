@@ -8,55 +8,53 @@ class RemoteMidtransTest < Test::Unit::TestCase
   def setup
     @gateway = MidtransGateway.new(fixtures(:midtrans))
     @default_options = default_options
-    @accepted_payment = accepted_payment
     @declined_payment = declined_payment
     @challenged_payment = challenged_payment
 
-    @accepted_card = credit_card('4811111111111114')
+    @accepted_card = credit_card("4811111111111114")
+    @declined_card = credit_card("4911111111111113")
     @card_payment_options = {
       payment_type: 'credit_card',
-      order_id: "abc"
+      order_id: SecureRandom.uuid
     }
   end
 
   def test_successful_purchase
     response = @gateway.purchase(200, @accepted_card, @card_payment_options)
-    p response
     assert_success response
     assert_equal response.params["status_code"], "200"
   end
 
   def test_declined_payment
-    options = @default_options.merge(order_id_options)
-    response = @gateway.purchase(options[:gross_amount], @declined_payment, options)
+    response = @gateway.purchase(200, @declined_card, @card_payment_options)
     assert_failure response
-    assert_equal response.status_code, MidtransGateway::STATUS_CODE_MAPPING[:denied]
-    assert_equal response.transaction_status, MidtransGateway::TRANSACTION_STATUS_MAPPING[:deny]
+    assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[202]
+    assert_equal response.message, "Deny by Bank [CIMB] with code [05] and message [Do not honour]"
   end
 
   def test_incorrect_gross_amount
-    options = @default_options.merge(order_id_options)
-    response = @gateway.purchase(options[:gross_amount] - 1, @accepted_payment, options)
+    response = @gateway.purchase(39.10, @accepted_card, @card_payment_options)
     assert_failure response
-    assert_equal response.status_code, MidtransGateway::STATUS_CODE_MAPPING[:validation_error]
+    assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[400]
+    assert_equal response.message, "One or more parameters in the payload is invalid."
   end
 
-  def test_order_id_is_not_exist
-    options = @default_options
-    response = @gateway.purchase(options[:gross_amount], @accepted_payment, options)
+  def test_missing_order_id
+    response = @gateway.purchase(200, @accepted_card, {payment_type: 'credit_card'})
     assert_failure response
-    assert_equal response.status_code, MidtransGateway::STATUS_CODE_MAPPING[:validation_error]
+    assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[400]
+    assert_equal response.message, "One or more parameters in the payload is invalid."
   end
 
   def test_duplicated_order_id
-    options = @default_options.merge(order_id_options)
-    response = @gateway.purchase(options[:gross_amount], @accepted_payment, options)
+    options = @card_payment_options
+    response = @gateway.purchase(200, @accepted_card, options)
     assert_success response
-    assert_equal response.transaction_status, MidtransGateway::TRANSACTION_STATUS_MAPPING[:capture]
 
-    response = @gateway.purchase(options[:gross_amount], @accepted_payment, options)
+    response = @gateway.purchase(200, @accepted_card, options)
     assert_failure response
-    assert_equal response.status_code, MidtransGateway::STATUS_CODE_MAPPING[:duplicated_order_id]
+    assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[406]
+    assert_equal response.message, "The request could not be completed due to a conflict with the current state of the target resource, please try again"
   end
 
   def test_token_id_is_missing
