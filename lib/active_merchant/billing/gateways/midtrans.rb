@@ -167,7 +167,7 @@ module ActiveMerchant #:nodoc:
 
       def add_authorization(post, money, authorization)
         post[:transaction_id] = authorization
-        post[:gross_amount] = money
+        post[:amount] = money
       end
 
       def commit(action, parameters)
@@ -176,7 +176,7 @@ module ActiveMerchant #:nodoc:
           when "purchase"
             gateway_response = @midtrans_gateway.charge(parameters)
           when "capture"
-            gateway_response = @midtrans_gateway.capture(*parameters.values)
+            gateway_response = @midtrans_gateway.capture(parameters[:transaction_id], parameters[:amount])
           when "void"
             gateway_response = @midtrans_gateway.cancel(parameters[:transaction_id])
           end
