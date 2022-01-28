@@ -95,9 +95,9 @@ module ActiveMerchant #:nodoc:
       def purchase(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
-        add_payment(post, payment)
-        add_address(post, options)
-        add_customer_data(post, options)
+        add_payment(post, payment, options)
+        # add_address(post, options)
+        # add_customer_data(post, options)
 
         commit('charge', post)
       end
@@ -156,18 +156,19 @@ module ActiveMerchant #:nodoc:
         post[:item_details] = options[:item_details]
       end
 
-      def add_payment(post, payment)
-        payment_type = payment[:payment_type]
-        post[:payment_type] = payment_type
-        # post[payment_type.to_sym] = payment[payment_type.to_sym]
-        credit_card = payment[:credit_card][:card]
+      def add_payment(post, payment, options)
+        post[:payment_type] = options[:payment_type]
+        post[:credit_card] = {}
+        token_id = tokenize_card(payment)
+        post[:credit_card][:token_id] = token_id
+      end
+
+      def tokenize_card(card)
         @uri = URI.parse(
-          "https://api.sandbox.veritrans.co.id/v2/token?card_number=#{credit_card[:number]}&card_cvv=#{credit_card[:cvv]}&card_exp_month=#{credit_card[:expiry_month]}&card_exp_year=#{credit_card[:expiry_year]}&client_key=#{@midtrans_gateway.config.client_key}"
+          "https://api.sandbox.midtrans.com/v2/token?card_number=#{card.number}&card_cvv=#{card.verification_value}&card_exp_month=#{card.month}&card_exp_year=#{card.year}&client_key=#{@midtrans_gateway.config.client_key}"
         )
         response = Net::HTTP.get_response(@uri)
-        p JSON.parse(response.body)["token_id"]
-        post[:credit_card] = {}
-        post[:credit_card][:token_id] = JSON.parse(response.body)["token_id"]
+        return JSON.parse(response.body)["token_id"]
       end
 
       def add_authorization(post, money, authorization)
@@ -179,8 +180,9 @@ module ActiveMerchant #:nodoc:
         begin
           gateway_response = @midtrans_gateway.public_send(action.to_sym, parameters)
           response_for(gateway_response)
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
+        rescue MidtransError => e
+          p e
+          Response.new(false, e.status_message)
         end
       end
 

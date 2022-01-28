@@ -11,33 +11,18 @@ class RemoteMidtransTest < Test::Unit::TestCase
     @accepted_payment = accepted_payment
     @declined_payment = declined_payment
     @challenged_payment = challenged_payment
+
+    @accepted_card = credit_card('4811111111111114')
+    @card_payment_options = {
+      payment_type: 'credit_card',
+      order_id: SecureRandom.uuid
+    }
   end
 
   def test_successful_purchase
-    # options = @default_options.merge(order_id_options)
-    options = {
-      "order_id": "abc"
-    }
-    card = {
-      number: '4811111111111114',
-      cvv: '123',
-      expiry_month: '01',
-      expiry_year: '2023'
-    }
-    payment = {
-      payment_type: 'credit_card',
-      credit_card: {
-        card: card,
-        dynamic_descriptor: {
-          "merchant_name": "Fuji Apple Inc",
-          "city_name": "Jakarta",
-          "country_code": "ID"
-        }
-      }
-    }
-    response = @gateway.purchase(200, payment, options)
+    response = @gateway.purchase(200, @accepted_card, @card_payment_options)
     assert_success response
-    assert_equal response.transaction_status, MidtransGateway::TRANSACTION_STATUS_MAPPING[:capture]
+    assert_equal response.params["status_code"], "200"
   end
 
   def test_declined_payment
