@@ -133,8 +133,8 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_equal void_response.params["transaction_status"], MidtransGateway::TRANSACTION_STATUS_MAPPING[:cancel]
   end
 
-  def test_void_not_found_transaction
-    response = @gateway.void('Not found transaction')
+  def test_void_when_invalid_tx_then_failure
+    response = @gateway.void('invalid_tx')
     assert_failure response
     assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[404]
   end
