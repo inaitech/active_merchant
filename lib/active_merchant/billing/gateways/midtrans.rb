@@ -132,9 +132,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def tokenize_card(card)
-        @uri = URI.parse(
-          "#{url()}/token?card_number=#{card.number}&card_cvv=#{card.verification_value}&card_exp_month=#{card.month}&card_exp_year=#{card.year}&client_key=#{@midtrans_gateway.config.client_key}"
-        )
+        query_params = {
+          card_number: card.number,
+          card_cvv: card.verification_value,
+          card_exp_month: card.month,
+          card_exp_year: card.year,
+          client_key: @midtrans_gateway.config.client_key
+        }
+        @uri = URI.parse("#{url()}/token?#{URI.encode_www_form(query_params)}")
         begin
           response = Net::HTTP.get_response(@uri)
           JSON.parse(response.body)["token_id"]
