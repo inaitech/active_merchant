@@ -11,13 +11,27 @@ module ActiveMerchant #:nodoc:
       self.live_url = 'https://api.midtrans.com/v2'
       self.supported_countries = ['ID']
       self.default_currency = 'IDR'
+
+      # https://support.midtrans.com/hc/en-us/articles/204379640-Which-payment-methods-do-Midtrans-currently-support-
       self.supported_cardtypes = [:visa, :master, :jcb, :american_express]
       self.homepage_url = 'https://midtrans.com/'
       self.display_name = 'Midtrans'
 
-      SUPPORTED_PAYMENT_METHODS = [:credit_card, :bank_transfer, :echannel,
-         :bca_klikpay, :bca_klikbca, :mandiri_clickpay, :bri_epay, :cimb_clicks,
-         :telkomsel_cash, :xl_tunai, :indosat_dompetku, :mandiri_ecash, :cstor]
+      SUPPORTED_PAYMENT_METHODS = [
+        :credit_card, 
+        :bank_transfer, 
+        :echannel,
+        :bca_klikpay, 
+        :bca_klikbca, 
+        :mandiri_clickpay, 
+        :bri_epay, 
+        :cimb_clicks,
+        :telkomsel_cash, 
+        :xl_tunai, 
+        :indosat_dompetku, 
+        :mandiri_ecash, 
+        :cstor
+      ]
 
       STATUS_CODE_MAPPING = {
         200 => "SUCCESS",
@@ -76,64 +90,13 @@ module ActiveMerchant #:nodoc:
         @midtrans_gateway.logger = options[:logger]
       end
 
-      def authorize(money, payment, options={})
-        options[:transaction_type] = TRANSACTION_STATUS_MAPPING[:authorize]
-        purchase(money, payment, options)
-      end
-
-      def capture(money, authorization, options={})
-        post = {}
-        add_authorization(post, money, authorization)
-
-        begin
-          gateway_response = @midtrans_gateway.capture(*post.values)
-          response_for(gateway_response)
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
-        end
-      end
-
       def purchase(money, payment, options={})
         post = {}
         add_invoice(post, money, options)
         add_payment(post, payment, options)
-        # add_address(post, options)
-        # add_customer_data(post, options)
-        charge(post)
-      end
-
-      def approve(payment, options = {})
-        begin
-          gateway_response = @midtrans_gateway.approve(payment, options)
-          response_for(gateway_response)
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
-        end
-      end
-
-      def void(authorization, options={})
-        begin
-          gateway_response = @midtrans_gateway.cancel(authorization, options)
-          response_for(gateway_response)
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
-        end
-      end
-
-      def status(authorization)
-        begin
-          gateway_response = @midtrans_gateway.status(authorization)
-          response_for(gateway_response)
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
-        end
-      end
-
-      def verify(payment, options = {})
-        MultiResponse.run do |r|
-          r.process { authorize(auth_minimum_amount(options), payment, options) }
-          r.process { void(r.authorization, options) }
-        end
+        add_address(post, options)
+        add_customer_data(post, options)
+        create_charge(post)
       end
 
       private
@@ -180,23 +143,13 @@ module ActiveMerchant #:nodoc:
         end
       end
 
-      def add_authorization(post, money, authorization)
-        post[:transaction_id] = authorization
-        post[:gross_amount] = money
-      end
-
-      def charge(parameters)
+      def create_charge(parameters)
         begin
           gateway_response = @midtrans_gateway.charge(parameters)
           response_for(gateway_response)
         rescue MidtransError => error
           error_response_for(error)
         end
-      end
-
-      def auth_minimum_amount(options)
-        return 100 unless options[:currency]
-        return MINIMUM_AUTHORIZE_AMOUNTS[options[:currency].upcase] || 100
       end
 
       def success_from(gateway_response)
