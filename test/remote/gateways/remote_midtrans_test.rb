@@ -101,6 +101,12 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_equal capture_response.params["transaction_status"], MidtransGateway::TRANSACTION_STATUS_MAPPING[:capture]
   end
 
+  def test_capture_when_id_nil_then_failure
+    assert_raise(ArgumentError) do
+      @gateway.capture(@amount, nil)
+    end
+  end
+
   def test_capture_when_invalid_id_then_failure
     assert capture_response = @gateway.capture(@amount, 'invalid_tx')
     assert_failure capture_response
@@ -137,5 +143,11 @@ class RemoteMidtransTest < Test::Unit::TestCase
     response = @gateway.void('invalid_tx')
     assert_failure response
     assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[404]
+  end
+
+  def test_void_when_id_nil_then_failure
+    assert_raise(ArgumentError) do
+      @gateway.void(nil)
+    end
   end
 end

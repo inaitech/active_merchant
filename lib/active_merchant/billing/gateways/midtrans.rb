@@ -81,6 +81,8 @@ module ActiveMerchant #:nodoc:
         deny: 'deny'
       }
 
+      MISSING_AUTHORIZATION_MESSAGE = "Missing required parameter: authorization"
+
       def initialize(options={})
         requires!(options, :client_key, :server_key)
         super
@@ -105,12 +107,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def capture(money, authorization, options={})
+        raise ArgumentError.new(MISSING_AUTHORIZATION_MESSAGE) if authorization.nil?
         post = {}
         add_authorization(post, money, authorization)
         commit("capture", post)
       end
 
       def void(authorization, options={})
+        raise ArgumentError.new(MISSING_AUTHORIZATION_MESSAGE) if authorization.nil?
         post = {}
         post[:transaction_id] = authorization
         commit("void", post)
