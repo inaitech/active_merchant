@@ -156,6 +156,7 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_success purchase_response
 
     assert refund_response = @gateway.refund(@amount, purchase_response.authorization, {})
+    # The created charge ios only in settling state hence added assertion for checking failure message and code
     assert_failure refund_response
     assert_equal refund_response.error_code, "CANNOT_MODIFY_TRANSACTION"
     assert_equal refund_response.message, "Transaction status cannot be updated."
