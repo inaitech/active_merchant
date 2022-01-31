@@ -68,7 +68,8 @@ module ActiveMerchant #:nodoc:
         deny: 'deny',
         authorize: 'authorize',
         cancel: 'cancel',
-        expire: 'expire'
+        expire: 'expire',
+        refund: 'refund'
       }
 
       MINIMUM_AUTHORIZE_AMOUNTS = {
@@ -114,6 +115,12 @@ module ActiveMerchant #:nodoc:
         post = {}
         post[:transaction_id] = authorization
         commit("void", post)
+      end
+
+      def refund(money, authorization, options={})
+        post = {}
+        contruct_refund_request(post, money, authorization, options)
+        commit("refund", post)
       end
 
       private
@@ -170,6 +177,14 @@ module ActiveMerchant #:nodoc:
         post[:amount] = money
       end
 
+      def contruct_refund_request(post, money, authorization, options={})
+        post[:transaction_id] = authorization
+        post[:details] = {}
+        post[:details][:amount] = money if money
+        post[:details][:reason] = options[:reason] if options[:reason]
+        post[:details][:refund_key] = options[:order_id] if options[:order_id]
+      end
+
       def commit(action, parameters)
         begin
           case action
@@ -179,6 +194,8 @@ module ActiveMerchant #:nodoc:
             gateway_response = @midtrans_gateway.capture(parameters[:transaction_id], parameters[:amount])
           when "void"
             gateway_response = @midtrans_gateway.cancel(parameters[:transaction_id])
+          when "refund"
+            gateway_response = @midtrans_gateway.refund(parameters[:transaction_id], parameters[:details])
           end
           response_for(gateway_response)
         rescue MidtransError => error

@@ -138,4 +138,21 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_failure response
     assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[404]
   end
+
+  def test_refund_when_valid_tx_then_success
+    purchase_response = @gateway.purchase(@amount, @accepted_card, @card_payment_options)
+    assert_success purchase_response
+
+    assert refund_response = @gateway.refund(@amount, purchase_response.authorization, {})
+    assert_failure refund_response
+    assert_equal refund_response.error_code, "CANNOT_MODIFY_TRANSACTION"
+    assert_equal refund_response.message, "Transaction status cannot be updated."
+    assert_equal refund_response.params["status_code"], "412"
+  end
+
+  def test_refund_when_invalid_tx_then_failure
+    response = @gateway.refund(@amount, 'invalid_tx')
+    assert_failure response
+    assert_equal response.error_code, MidtransGateway::STATUS_CODE_MAPPING[404]
+  end
 end
