@@ -83,6 +83,9 @@ module ActiveMerchant #:nodoc:
       }
 
       MISSING_AUTHORIZATION_MESSAGE = "Missing required parameter: authorization"
+      CARD_TOKEN_CREATION_SUCCESSFUL = "CARD_TOKEN_CREATION_SUCCESSFUL"
+      CARD_TOKEN_CREATION_FAILED = "CARD_TOKEN_CREATION_FAILED"
+
 
       def initialize(options={})
         requires!(options, :client_key, :server_key)
@@ -128,6 +131,10 @@ module ActiveMerchant #:nodoc:
         commit("refund", post)
       end
 
+      def store(payment, options={})
+        register_card(payment)
+      end
+
       private
 
       def add_customer_data(post, options)
@@ -151,13 +158,35 @@ module ActiveMerchant #:nodoc:
       def add_payment(post, payment, options)
         post[:payment_type] = options[:payment_type]
         post[:credit_card] = {}
-        token_id = tokenize_card(payment)
+        token_id = nil
+        if payment.is_a?(WalletToken)
+          token_id = payment.token if payment.token
+          post[:credit_card][:save_token_id] = true
+        else
+          token_id = tokenize_card(payment)["token_id"]
+        end
         post[:credit_card][:token_id] = token_id
         post[:credit_card][:type] = options[:transaction_type] if options[:transaction_type]
       end
 
       def url()
         "#{(test? ? test_url : live_url)}"
+      end
+
+      def register_card(card)
+        query_params = {
+          card_number: card.number,
+          card_exp_month: '%02d' % card.month,
+          card_exp_year: card.year,
+          client_key: @midtrans_gateway.config.client_key
+        }
+        @uri = URI.parse("#{url()}/card/register?#{URI.encode_www_form(query_params)}")
+        begin
+          response = Net::HTTP.get_response(@uri)
+          token_response_for(JSON.parse(response.body))
+        rescue ResponseError => e
+          Response.new(false, e.response.message)
+        end
       end
 
       def tokenize_card(card)
@@ -171,7 +200,7 @@ module ActiveMerchant #:nodoc:
         @uri = URI.parse("#{url()}/token?#{URI.encode_www_form(query_params)}")
         begin
           response = Net::HTTP.get_response(@uri)
-          JSON.parse(response.body)["token_id"]
+          JSON.parse(response.body)
         rescue ResponseError => e
           Response.new(false, e.response.message)
         end
@@ -248,6 +277,19 @@ module ActiveMerchant #:nodoc:
           authorization: authorization_from(gateway_response),
           test: test?,
           error_code: error_code_from(gateway_response.status_code)
+        )
+      end
+
+      def token_response_for(gateway_response)
+        success = gateway_response["status_code"] == "200"
+        message = success ? CARD_TOKEN_CREATION_SUCCESSFUL: CARD_TOKEN_CREATION_FAILED
+        Response.new(
+          success,
+          message,
+          gateway_response,
+          authorization: success ? gateway_response["saved_token_id"]: nil,
+          test: test?,
+          error_code: error_code_from(gateway_response["status_code"])
         )
       end
     end
