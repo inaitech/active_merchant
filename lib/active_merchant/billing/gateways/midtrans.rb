@@ -132,7 +132,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def store(payment, options={})
-        register_card(payment)
+        # register_card(payment)
+        options[:save_token_id] = true
+        options[:payment_type] = "credit_card"
+        options[:order_id] = generate_unique_id()
+        MultiResponse.run(:use_first_response) do |r|
+          r.process { token_response_for(authorize(MINIMUM_AUTHORIZE_AMOUNTS['IDR'], payment, options).params) }
+          r.process(:ignore_result) { void(r.authorization, options) }
+        end
       end
 
       private
@@ -161,12 +168,12 @@ module ActiveMerchant #:nodoc:
         token_id = nil
         if payment.is_a?(WalletToken)
           token_id = payment.token if payment.token
-          post[:credit_card][:save_token_id] = true
         else
           token_id = tokenize_card(payment)["token_id"]
         end
         post[:credit_card][:token_id] = token_id
         post[:credit_card][:type] = options[:transaction_type] if options[:transaction_type]
+        post[:credit_card][:save_token_id] = options[:save_token_id] if options[:save_token_id]
       end
 
       def url()
