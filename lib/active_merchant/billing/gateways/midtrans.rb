@@ -137,7 +137,7 @@ module ActiveMerchant #:nodoc:
         options[:order_id] = generate_unique_id()
         MultiResponse.run(:use_first_response) do |r|
           r.process { token_response_for(authorize(MINIMUM_AUTHORIZE_AMOUNTS['IDR'], payment, options).params) }
-          r.process(:ignore_result) { void(r.authorization, options) }
+          r.process(:ignore_result) { void(r.params["transaction_id"], options) }
         end
       end
 
