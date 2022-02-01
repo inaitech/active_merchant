@@ -254,4 +254,27 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_equal authorize_response.params["status_code"], "411"
     assert_equal authorize_response.message, "Credit card token is no longer available. Please create a new one."
   end
+
+  def test_verify_credentials_when_valid_creds_then_success
+    response = @gateway.verify_credentials()
+    assert_success response
+  end
+
+  def test_verify_credentials_when_invalid_creds_then_failure
+    # Invalid server key
+    invalid_gateway = MidtransGateway.new(
+      :client_key => fixtures(:midtrans)[:client_key],
+      :server_key => "dummy"
+    )
+    response = invalid_gateway.verify_credentials()
+    assert_failure response
+
+    # Invalid client key
+    invalid_gateway = MidtransGateway.new(
+      :client_key => "dummy",
+      :server_key => fixtures(:midtrans)[:server_key]
+    )
+    response = invalid_gateway.verify_credentials()
+    assert_failure response
+  end
 end
