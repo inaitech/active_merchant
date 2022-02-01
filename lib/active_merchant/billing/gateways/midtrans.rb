@@ -132,7 +132,6 @@ module ActiveMerchant #:nodoc:
       end
 
       def store(payment, options={})
-        # register_card(payment)
         options[:save_token_id] = true
         options[:payment_type] = "credit_card"
         options[:order_id] = generate_unique_id()
@@ -178,22 +177,6 @@ module ActiveMerchant #:nodoc:
 
       def url()
         "#{(test? ? test_url : live_url)}"
-      end
-
-      def register_card(card)
-        query_params = {
-          card_number: card.number,
-          card_exp_month: '%02d' % card.month,
-          card_exp_year: card.year,
-          client_key: @midtrans_gateway.config.client_key
-        }
-        @uri = URI.parse("#{url()}/card/register?#{URI.encode_www_form(query_params)}")
-        begin
-          response = Net::HTTP.get_response(@uri)
-          token_response_for(JSON.parse(response.body))
-        rescue ResponseError => e
-          Response.new(false, e.response.message)
-        end
       end
 
       def tokenize_card(card)
