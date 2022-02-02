@@ -142,11 +142,13 @@ module ActiveMerchant #:nodoc:
       end
 
       def verify_credentials()
-        options = {}
-        transaction_details = {}
-        transaction_details[:gross_amount] = MINIMUM_AUTHORIZE_AMOUNTS['IDR']
-        transaction_details[:order_id] = generate_unique_id()
-        options[:transaction_details] = transaction_details
+        transaction_details = {
+          :gross_amount => MINIMUM_AUTHORIZE_AMOUNTS['IDR'],
+          :order_id => generate_unique_id()
+        }
+        options = {
+          :transaction_details => transaction_details
+        }
         commit('verify_credentials', options)
       end
 
