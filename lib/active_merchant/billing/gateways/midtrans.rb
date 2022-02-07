@@ -141,6 +141,17 @@ module ActiveMerchant #:nodoc:
         end
       end
 
+      def verify_credentials()
+        transaction_details = {
+          :gross_amount => MINIMUM_AUTHORIZE_AMOUNTS['IDR'],
+          :order_id => generate_unique_id()
+        }
+        options = {
+          :transaction_details => transaction_details
+        }
+        commit('verify_credentials', options)
+      end
+
       private
 
       def add_customer_data(post, options)
@@ -220,6 +231,8 @@ module ActiveMerchant #:nodoc:
             gateway_response = @midtrans_gateway.cancel(parameters[:transaction_id])
           when "refund"
             gateway_response = @midtrans_gateway.refund(parameters[:transaction_id], parameters[:details])
+          when "verify_credentials"
+            gateway_response = @midtrans_gateway.create_snap_token(parameters)
           end
           response_for(gateway_response)
         rescue MidtransError => error
