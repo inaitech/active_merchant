@@ -17,6 +17,18 @@ class RemoteMidtransTest < Test::Unit::TestCase
       order_id: SecureRandom.uuid,
       enable_3ds: true
     }
+    @metadata = {
+      name: "sasuke",
+      clan_name: "uchiha",
+      siblings: [
+        {
+          name: "itachi"
+        }
+      ],
+      father: {
+        name: "fugaku"
+      }
+    }
   end
 
   def test_purchase_when_valid_card_then_success
@@ -203,6 +215,13 @@ class RemoteMidtransTest < Test::Unit::TestCase
   def test_store_card_with_3ds_when_valid_card_then_success
     response = @gateway.store(@accepted_card, {"enable_3ds": true})
     assert_success response
+    assert_equal response.params["status_code"], "201"
+  end
+
+  def test_store_card_with_3ds_with_metadata_when_valid_card_then_success
+    response = @gateway.store(@accepted_card, {"enable_3ds": true, "metadata": @metadata, "notification_url": "https://webhook.site/d69ca01e-0af4-469f-91d4-d49898325ecf"})
+    assert_success response
+    p response
     assert_equal response.params["status_code"], "201"
   end
 
