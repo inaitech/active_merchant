@@ -12,12 +12,24 @@ class RemoteMidtransTest < Test::Unit::TestCase
       payment_type: 'credit_card',
       order_id: SecureRandom.uuid
     }
+    @card_with_3ds_payment_options = {
+      payment_type: 'credit_card',
+      order_id: SecureRandom.uuid,
+      enable_3ds: true
+    }
   end
 
   def test_purchase_when_valid_card_then_success
     response = @gateway.purchase(@amount, @accepted_card, @card_payment_options)
     assert_success response
     assert_equal response.params["status_code"], "200"
+  end
+
+  def test_purchase_when_valid_card_with_3ds_then_success
+    response = @gateway.purchase(@amount, @accepted_card, @card_with_3ds_payment_options)
+    assert_success response
+    assert_equal response.params["status_code"], "201"
+    assert response.params["redirect_url"] != nil
   end
 
   def test_purchase_when_declined_card_then_failure
@@ -57,6 +69,13 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_success response
     assert_equal response.params["transaction_status"], MidtransGateway::TRANSACTION_STATUS_MAPPING[:authorize]
     assert_equal response.message, "Success, Credit Card transaction is successful"
+  end
+
+  def test_authorize_when_valid_card_with_3ds_then_success
+    response = @gateway.authorize(@amount, @accepted_card, @card_with_3ds_payment_options)
+    assert_success response
+    assert_equal response.params["status_code"], "201"
+    assert response.params["redirect_url"] != nil
   end
 
   def test_authorize_when_declined_card_then_failure
@@ -179,6 +198,12 @@ class RemoteMidtransTest < Test::Unit::TestCase
     response = @gateway.store(@accepted_card)
     assert_success response
     assert_equal response.params["status_code"], "200"
+  end
+
+  def test_store_card_with_3ds_when_valid_card_then_success
+    response = @gateway.store(@accepted_card, {"enable_3ds": true})
+    assert_success response
+    assert_equal response.params["status_code"], "201"
   end
 
   def test_store_card_when_invalid_card_then_failure
