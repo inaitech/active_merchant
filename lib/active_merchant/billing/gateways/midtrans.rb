@@ -190,8 +190,12 @@ module ActiveMerchant #:nodoc:
           post[:credit_card][:save_token_id] = options[:save_token_id] if options[:save_token_id]
         elsif post[:payment_type] == "gopay"
           post[:gopay] = {}
-          post[:gopay][:enable_callback] = true
+          post[:gopay][:enable_callback] = true if options[:callback_url]
           post[:gopay][:callback_url] = options[:callback_url] if options[:callback_url]
+        elsif post[:payment_type] == "shopeepay"
+          post[:shopeepay] = {}
+          post[:shopeepay][:enable_callback] = true if options[:callback_url]
+          post[:shopeepay][:callback_url] = options[:callback_url] if options[:callback_url]
         elsif post[:payment_type] == "qris"
           post[:qris] = {}
           post[:qris][:acquirer] = options[:acquirer] if options[:acquirer]
