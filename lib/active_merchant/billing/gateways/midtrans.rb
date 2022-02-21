@@ -181,9 +181,9 @@ module ActiveMerchant #:nodoc:
           post[:credit_card] = {}
           token_id = nil
           if payment.is_a?(WalletToken)
-          token_id = payment.token if payment.token
+            token_id = payment.token if payment.token
           else
-          token_id = tokenize_card(payment)["token_id"]
+            token_id = tokenize_card(payment)["token_id"]
           end
           post[:credit_card][:token_id] = token_id
           post[:credit_card][:type] = options[:transaction_type] if options[:transaction_type]
@@ -192,6 +192,9 @@ module ActiveMerchant #:nodoc:
           post[:gopay] = {}
           post[:gopay][:enable_callback] = true
           post[:gopay][:callback_url] = options[:callback_url] if options[:callback_url]
+        elsif post[:payment_type] == "qris"
+          post[:qris] = {}
+          post[:qris][:acquirer] = options[:acquirer] if options[:acquirer]
         end
       end
 
