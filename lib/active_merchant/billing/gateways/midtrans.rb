@@ -31,7 +31,8 @@ module ActiveMerchant #:nodoc:
         :indosat_dompetku, 
         :mandiri_ecash, 
         :cstor,
-        :gopay
+        :gopay,
+        :shopeepay
       ]
 
       STATUS_CODE_MAPPING = {
