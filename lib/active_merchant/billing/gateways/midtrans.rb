@@ -89,6 +89,10 @@ module ActiveMerchant #:nodoc:
       CARD_TOKEN_CREATION_SUCCESSFUL = "CARD_TOKEN_CREATION_SUCCESSFUL"
       CARD_TOKEN_CREATION_FAILED = "CARD_TOKEN_CREATION_FAILED"
 
+      GOPAY = "gopay"
+      SHOPEEPAY = "shopeepay"
+      QRIS = "qris"
+
 
       def initialize(options={})
         requires!(options, :client_key, :server_key)
@@ -189,15 +193,15 @@ module ActiveMerchant #:nodoc:
           post[:credit_card][:token_id] = token_id
           post[:credit_card][:type] = options[:transaction_type] if options[:transaction_type]
           post[:credit_card][:save_token_id] = options[:save_token_id] if options[:save_token_id]
-        elsif post[:payment_type] == "gopay"
+        elsif post[:payment_type] == GOPAY
           post[:gopay] = {}
           post[:gopay][:enable_callback] = true if options[:callback_url]
           post[:gopay][:callback_url] = options[:callback_url] if options[:callback_url]
-        elsif post[:payment_type] == "shopeepay"
+        elsif post[:payment_type] == SHOPEEPAY
           post[:shopeepay] = {}
           post[:shopeepay][:enable_callback] = true if options[:callback_url]
           post[:shopeepay][:callback_url] = options[:callback_url] if options[:callback_url]
-        elsif post[:payment_type] == "qris"
+        elsif post[:payment_type] == QRIS
           post[:qris] = {}
           post[:qris][:acquirer] = options[:acquirer] if options[:acquirer]
         end
