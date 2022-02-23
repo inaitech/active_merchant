@@ -92,6 +92,7 @@ module ActiveMerchant #:nodoc:
       GOPAY = "gopay"
       SHOPEEPAY = "shopeepay"
       QRIS = "qris"
+      CREDIT_CARD = "credit_card"
 
 
       def initialize(options={})
@@ -141,7 +142,7 @@ module ActiveMerchant #:nodoc:
 
       def store(payment, options={})
         options[:save_token_id] = true
-        options[:payment_type] = "credit_card"
+        options[:payment_type] = CREDIT_CARD
         options[:order_id] = generate_unique_id()
         MultiResponse.run(:use_first_response) do |r|
           r.process { token_response_for(authorize(MINIMUM_AUTHORIZE_AMOUNTS['IDR'], payment, options).params) }
@@ -182,7 +183,7 @@ module ActiveMerchant #:nodoc:
 
       def add_payment(post, payment, options)
         post[:payment_type] = options[:payment_type]
-        if post[:payment_type] == "credit_card"
+        if post[:payment_type] == CREDIT_CARD
           post[:credit_card] = {}
           token_id = nil
           if payment.is_a?(WalletToken)
