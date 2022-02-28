@@ -105,9 +105,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def purchase(money, payment, options={})
-        @midtrans_gateway.config.override_notif_url = options[:notification_url] if options[:notification_url]
         post = {}
-        @midtrans_gateway.config.override_notif_url = options[:notification_url] if options[:notification_url]
+        configure_notification_url(options)
         add_invoice(post, money, options)
         add_payment(post, payment, options)
         add_address(post, options)
@@ -130,6 +129,7 @@ module ActiveMerchant #:nodoc:
 
       def void(authorization, options={})
         raise ArgumentError.new(MISSING_AUTHORIZATION_MESSAGE) if authorization.nil?
+        configure_notification_url(options)
         post = {}
         post[:transaction_id] = authorization
         commit("void", post)
@@ -167,6 +167,10 @@ module ActiveMerchant #:nodoc:
 
       def add_metadata(post, options)
         post[:metadata] = options[:metadata] if options[:metadata]
+      end
+
+      def configure_notification_url(options)
+        @midtrans_gateway.config.override_notif_url = options[:notification_url] if options[:notification_url]
       end
 
       def add_customer_data(post, options)
