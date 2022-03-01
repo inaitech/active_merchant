@@ -28,6 +28,7 @@ class RemoteMidtransTest < Test::Unit::TestCase
       father: {
         name: "fugaku"
       }
+    }
     @gopay_payment_options = {
       payment_type: 'gopay',
       order_id: SecureRandom.uuid,
@@ -65,6 +66,8 @@ class RemoteMidtransTest < Test::Unit::TestCase
     assert_success response
     assert_equal "201", response.params["status_code"]
     assert response.params["redirect_url"].present?
+  end
+  
   def test_purchase_when_gopay_valid_request_then_success
     response = @gateway.purchase(@amount, {}, @gopay_payment_options)
     assert_success response
