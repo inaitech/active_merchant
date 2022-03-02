@@ -88,6 +88,8 @@ module ActiveMerchant #:nodoc:
       MISSING_AUTHORIZATION_MESSAGE = "Missing required parameter: authorization"
       CARD_TOKEN_CREATION_SUCCESSFUL = "CARD_TOKEN_CREATION_SUCCESSFUL"
       CARD_TOKEN_CREATION_FAILED = "CARD_TOKEN_CREATION_FAILED"
+      VA_NUMBERS = "va_numbers"
+      BILL_INFO_MESSAGE = "Order ID:"
 
       GOPAY = "gopay"
       SHOPEEPAY = "shopeepay"
@@ -226,7 +228,7 @@ module ActiveMerchant #:nodoc:
           post[:bank_transfer][:bank] = options[:bank_code] if options[:bank_code]
         elsif post[:payment_type] == ECHANNEL
           post[:echannel] = {
-            :bill_info1 => "Order ID:",
+            :bill_info1 => BILL_INFO_MESSAGE,
             :bill_info2 => options[:order_id]
           }
         end
@@ -309,14 +311,14 @@ module ActiveMerchant #:nodoc:
       def construct_midtrans_response(gateway_response)
         response = gateway_response.data
         if response[:payment_type] == BANK_TRANSFER && response.key?(:permata_va_number)
-          response["va_numbers"] = [
+          response[VA_NUMBERS] = [
             {
               "va_number": response[:permata_va_number],
               "bank": PERMATA
             }
           ]
         elsif response[:payment_type] == ECHANNEL and response.key?(:bill_key)
-          response["va_numbers"] = [
+          response[VA_NUMBERS] = [
             {
               "bill_key": response[:bill_key],
               "bill_code": response[:bill_code],
