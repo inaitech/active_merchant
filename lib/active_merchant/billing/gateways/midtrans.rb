@@ -95,6 +95,9 @@ module ActiveMerchant #:nodoc:
       CREDIT_CARD = "credit_card"
       BANK_TRANSFER = "bank_transfer"
       ECHANNEL = "echannel"
+      PERMATA = "permata"
+      MANDIRI = "mandiri"
+
 
 
       def initialize(options={})
@@ -305,19 +308,19 @@ module ActiveMerchant #:nodoc:
 
       def construct_midtrans_response(gateway_response)
         response = gateway_response.data
-        if response[:payment_type] == "bank_transfer" && response.key?(:permata_va_number)
+        if response[:payment_type] == BANK_TRANSFER && response.key?(:permata_va_number)
           response["va_numbers"] = [
             {
               "va_number": response[:permata_va_number],
-              "bank": "permata"
+              "bank": PERMATA
             }
           ]
-        elsif response[:payment_type] == "echannel" and response.key?(:bill_key)
+        elsif response[:payment_type] == ECHANNEL and response.key?(:bill_key)
           response["va_numbers"] = [
             {
               "bill_key": response[:bill_key],
               "bill_code": response[:bill_code],
-              "bank": "mandiri"
+              "bank": MANDIRI
             }
           ]
         end
