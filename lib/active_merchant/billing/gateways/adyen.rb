@@ -630,12 +630,12 @@ module ActiveMerchant #:nodoc:
 
         post[:browserInfo] = {
           acceptHeader: browser_info[:accept_header],
-          colorDepth: browser_info[:depth],
-          javaEnabled: browser_info[:java],
-          language: browser_info[:language],
-          screenHeight: browser_info[:height],
-          screenWidth: browser_info[:width],
-          timeZoneOffset: browser_info[:timezone],
+          colorDepth: browser_info[:color_depth] || browser_info[:depth],
+          javaEnabled: browser_info[:java_enabled] || browser_info[:java],
+          language: browser_info[:accept_language] || browser_info[:language],
+          screenHeight: browser_info[:screen_height] || browser_info[:height],
+          screenWidth: browser_info[:screen_width] || browser_info[:width],
+          timeZoneOffset: browser_info[:timezone_offset] || browser_info[:timezone],
           userAgent: browser_info[:user_agent]
         }
       end
